@@ -10,7 +10,7 @@ COPY go.mod go.sum templates ./
 
 COPY . .
 
-RUN go mod download
+RUN go get ./...
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o main -ldflags="-s -w" main.go
 
