@@ -48,8 +48,8 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=uganda_api
+      - DB_PASSWORD=D5YNyg1qZuUGYHgrC57ivx2LXasiE1IC
+      - DB_NAME=SSPTRBnDjHpKHrESuDkq
       - DB_PORT=5432
     volumes:
       - ./backend:/app
