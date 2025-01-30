@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/uganda-data/database"
-	_ "github.com/uganda-data/docs"
-	"github.com/uganda-data/middleware"
-	v1 "github.com/uganda-data/routes/v1"
+	"opendataug.org/database"
+	_ "opendataug.org/docs"
+	"opendataug.org/middleware"
+	v1 "opendataug.org/routes/v1"
 )
 
 // @title Uganda Data API

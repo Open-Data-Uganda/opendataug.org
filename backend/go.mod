@@ -1,4 +1,4 @@
-module github.com/uganda-data
+module opendataug.org
 
 go 1.23.5
 

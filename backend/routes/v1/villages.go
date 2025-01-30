@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uganda-data/commons"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/models"
+	"opendataug.org/commons"
+	"opendataug.org/database"
+	"opendataug.org/models"
 )
 
 type VillageHandler struct {

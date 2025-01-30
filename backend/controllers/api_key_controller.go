@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/models"
 	"gorm.io/gorm"
+	"opendataug.org/database"
+	"opendataug.org/models"
 )
 
 type APIKeyController struct {

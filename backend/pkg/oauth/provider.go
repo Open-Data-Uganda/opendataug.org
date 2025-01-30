@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uganda-data/controllers"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
+	"opendataug.org/controllers"
+	"opendataug.org/database"
+	"opendataug.org/models"
 )
 
 type Provider struct {

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uganda-data/controllers"
-	"github.com/uganda-data/database"
+	"opendataug.org/controllers"
+	"opendataug.org/database"
 )
 
 func APIKeyAuth(db *database.Database) gin.HandlerFunc {
