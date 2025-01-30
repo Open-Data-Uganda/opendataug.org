@@ -35,6 +35,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args: BUILDKIT_INLINE_CACHE=1
     ports:
       - "8080:8080"
     environment:
