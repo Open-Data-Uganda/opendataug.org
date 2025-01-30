@@ -6,7 +6,7 @@ RUN mkdir /app
 
 WORKDIR /app
 
-COPY go.mod go.sum templates ./
+COPY go.mod go.sum ./.env templates ./
 
 COPY . .
 
