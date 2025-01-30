@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.21-alpine AS build 
 
 RUN apk update && apk add --no-cache git
 
@@ -20,11 +20,11 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
-COPY --from=builder /app/main .
+COPY --from=build /app/main .
 
-COPY --from=builder /app/templates ./templates
+COPY --from=build /app/templates ./templates
 
-COPY --from=builder /app/.env .
+COPY --from=build /app/.env .
 
 EXPOSE 8080
 
