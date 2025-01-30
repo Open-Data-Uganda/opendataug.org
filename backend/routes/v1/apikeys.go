@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/uganda-data/commons"
-	"github.com/uganda-data/controllers"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/models"
 	"gorm.io/gorm"
+	"opendataug.org/commons"
+	"opendataug.org/controllers"
+	"opendataug.org/database"
+	"opendataug.org/models"
 )
 
 type APIKeyHandler struct {

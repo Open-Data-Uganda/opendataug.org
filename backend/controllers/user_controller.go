@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/models"
+	"opendataug.org/database"
+	"opendataug.org/models"
 )
 
 type UserController struct {

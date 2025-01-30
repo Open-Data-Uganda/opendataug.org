@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/routes"
+	"opendataug.org/database"
+	"opendataug.org/routes"
 )
 
 func main() {

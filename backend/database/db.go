@@ -3,9 +3,9 @@ package database
 import (
 	"errors"
 
-	"github.com/uganda-data/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"opendataug.org/models"
 )
 
 type Config struct {

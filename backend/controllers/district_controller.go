@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uganda-data/models"
 	"gorm.io/gorm"
+	"opendataug.org/models"
 )
 
 type DistrictController struct {

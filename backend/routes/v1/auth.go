@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uganda-data/database"
-	"github.com/uganda-data/pkg/oauth"
+	"opendataug.org/database"
+	"opendataug.org/pkg/oauth"
 )
 
 type AuthHandler struct {
