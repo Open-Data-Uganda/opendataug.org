@@ -47,7 +47,7 @@ func NewDatabase(config *Config) (*Database, error) {
 
 	dsn := "host=" + config.Host + " user=" + config.User +
 		" password=" + config.Password + " dbname=" + config.DBName +
-		" port=" + config.Port + " sslmode=" + config.SSLMode
+		" port=" + config.Port + " sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
