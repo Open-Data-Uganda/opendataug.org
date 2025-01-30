@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine as build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN npm run build
 
 FROM nginx:alpine
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 RUN echo 'server { \
     listen 3000; \
