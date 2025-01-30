@@ -62,8 +62,8 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=uganda_api
+      - POSTGRES_PASSWORD=D5YNyg1qZuUGYHgrC57ivx2LXasiE1IC
+      - POSTGRES_DB=SSPTRBnDjHpKHrESuDkq
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
