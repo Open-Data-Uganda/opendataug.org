@@ -1,48 +1,46 @@
-# Build stage
+FROM node:20-alpine AS build
+
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+COPY . .
+
+RUN npm install --omit=dev --production=true
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+COPY --from=build /app/node_modules ./node_modules
 
-# Install dependencies
-RUN npm ci
-
-# Copy the rest of the application
 COPY . .
 
-# Build the Next.js application
-RUN npm run build
+RUN NODE_ENV=production npm run build && npm prune --production
 
-# Production stage
+
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV production
 
-# Copy necessary files from builder
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+
 COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
 
-# Install only production dependencies
-RUN npm ci --only=production
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# Expose the port Next.js runs on
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
 
-# Start the application
+ENV PORT 3000
+
+ENV NEXT_TELEMETRY_DISABLED 1
+
 CMD ["node", "server.js"]
-
-FROM nginx:alpine
-
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 3000
-
-CMD ["nginx", "-g", "daemon off;"] 
