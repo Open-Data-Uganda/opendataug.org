@@ -9,9 +9,6 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-    volumes:
-      - ./web:/app
-      - /app/node_modules
 
   app:
     build:
@@ -21,9 +18,6 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-    volumes:
-      - ./app:/app
-      - /app/node_modules
     depends_on:
       - backend
 
@@ -35,10 +29,6 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
-    volumes:
-      - ./docs:/app
-      - /app/node_modules
-
   backend:
     build:
       context: ./backend
@@ -51,8 +41,6 @@ services:
       - DB_PASSWORD=D5YNyg1qZuUGYHgrC57ivx2LXasiE1IC
       - DB_NAME=SSPTRBnDjHpKHrESuDkq
       - DB_PORT=5432
-    volumes:
-      - ./backend:/app
     depends_on:
       - postgres
 
