@@ -4,4 +4,9 @@
 tmp
 *.md
 .idea
-.vscode 
+.vscode
+README.md
+Dockerfile
+/test
+*.test
+/tmp 
