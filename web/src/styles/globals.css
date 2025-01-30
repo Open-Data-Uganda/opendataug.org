@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @keyframes gradientChange {
+    0% {
+      background-position: 0%;
+    }
+
+    50% {
+      background-position: 100%;
+    }
+
+    100% {
+      background-position: 0%;
+    }
+  }
+
+  .gradient {
+    background: linear-gradient(90deg, blue, red);
+    background-size: 200% 200%;
+  }
+
+  .element-to-rotate {
+    animation: gradientChange 4s ease infinite;
+  }
+}
+
+@layer base {
+  body {
+    @apply relative   text-base font-normal;
+  }
+  .select-class {
+    @apply w-full appearance-none rounded border border-gray-300 bg-transparent px-4 py-2 text-gray-700 focus:bg-white focus:outline-none;
+  }
+
+  .input-class {
+    @apply block w-full  appearance-none rounded border border-gray-300 px-4 py-2 leading-tight text-gray-700 focus:bg-white focus:outline-none;
+  }
+  .th {
+    @apply max-w-[220px] px-4 py-4 font-bold text-black;
+  }
+  .form-class {
+    @apply block w-full  appearance-none rounded border border-gray-300 px-4 py-2 leading-tight text-gray-700 focus:bg-white focus:outline-none;
+  }
+  .button {
+    @apply mt-5 inline-flex items-center justify-center rounded bg-primary px-5 py-2 text-center font-medium text-white hover:bg-opacity-90 md:mt-10 lg:px-6 xl:px-8;
+  }
+}
+
+#cards .bg1 {
+  background-color: #f5ffeb;
+}
+
+#cards .bg2 {
+  background-color: #fdebfe;
+}
+
+#cards .bg3 {
+  background-color: #e0fbfc;
+}
+
+tr:nth-child(even) {
+  background-color: #f7f9fc;
+}
+
+#cards .bg4 {
+  background-color: #fefae0;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+* {
+  font-family: "Roboto";
+}
+
+* {
+  font-weight: 500;
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+}
+
+.faq-question {
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  background: none;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.faq-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.faq-content.expanded {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+.faq-item button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+.faq-item button:hover {
+  opacity: 0.8;
+}
+
+.faq-item svg {
+  transition: transform 0.3s ease;
+}
+
+.faq-item button[aria-expanded="true"] svg {
+  transform: rotate(45deg);
+}
