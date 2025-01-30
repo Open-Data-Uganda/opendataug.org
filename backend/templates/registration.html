@@ -1,0 +1,102 @@
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{{.MailType}}</title>
+  </head>
+
+  <body>
+    <table
+      style="
+        background-color: #f6f8f1;
+        padding: 40px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        top: 0;
+        right: 0;
+        height: auto;
+        width: 100%;
+      "
+      border="0"
+      align="center"
+      cellpadding="0"
+      cellspacing="0"
+    >
+      <tr>
+        <td>
+          <table
+            style="background-color: #ffffff; padding: 20px"
+            width="90%"
+            align="center"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+          >
+            <tr>
+              <td
+                style="
+                  text-align: center;
+                  font-size: 16px;
+                  line-height: 22px;
+                  color: #0a2640;
+                  font-family: sans-serif;
+                "
+              >
+                <br />
+                <p>
+                  Hello {{.UserName}} <br /><br />Thank you for registering with
+                  <b> rbbuildings.co.uk </b> <br />
+                  Email: {{.Email}} <br />
+                </p>
+                <p>
+                  <a
+                    href="https://crm.rbbuildings.co.uk/set-password/{{.Token}}"
+                    title="Verify Account"
+                    style="
+                      background-color: #0a2640;
+                      color: #ffffff;
+                      padding: 7px;
+                      border-radius: 20px 20px 20px 20px;
+                    "
+                  >
+                    Verify Account
+                  </a>
+                </p>
+
+                <br />
+                <br />
+
+                <p style="text-align: center">
+                  <small
+                    >This email was sent to {{.Email}}, if you are not the
+                    intended recipient, kindly ignore.
+                  </small>
+                </p>
+              </td>
+            </tr>
+          </table>
+          <table
+            style="padding: 20px"
+            align="center"
+            width="55%"
+            border="0"
+            cellpadding="0"
+            cellspacing="0"
+          >
+            <tr style="text-align: center">
+              <td style="font-family: sans-serif; font-size: 12px">
+                <small>
+                  Copyright © {{.CurrentYear}}
+                  <a href="rbbuildings.co.uk">rbbuildings.co.uk</a> , All rights
+                  reserved.
+                </small>
+                <br />
+                <br />
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

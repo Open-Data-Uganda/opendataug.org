@@ -22,7 +22,7 @@ WORKDIR /root/
 
 COPY --from=build /app/main .
 
-# COPY --from=build /app/templates ./templates
+COPY --from=build /app/templates ./templates
 
 COPY --from=build /app/.env .
 
