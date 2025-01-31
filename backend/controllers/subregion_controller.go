@@ -8,50 +8,50 @@ import (
 	"opendataug.org/models"
 )
 
-type ParishController struct {
+type SubRegionHandler struct {
 	DB *gorm.DB
 }
 
-func NewParishController(db *gorm.DB) *ParishController {
-	return &ParishController{DB: db}
+func NewSubRegionHandler(db *gorm.DB) *SubRegionHandler {
+	return &SubRegionHandler{DB: db}
 }
 
-func (pc *ParishController) GetParishes(c *gin.Context) {
-	var parishes []models.Parish
-	result := pc.DB.Find(&parishes)
+func (sc *SubRegionHandler) GetSubRegions(c *gin.Context) {
+	var subregions []models.SubRegion
+	result := sc.DB.Find(&subregions)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to fetch parishes",
+			"message": "Failed to fetch subregions",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": parishes,
+		"data": subregions,
 	})
 }
 
-func (pc *ParishController) GetParish(c *gin.Context) {
+func (sc *SubRegionHandler) GetSubRegion(c *gin.Context) {
 	id := c.Param("id")
-	var parish models.Parish
+	var subregion models.SubRegion
 
-	result := pc.DB.First(&parish, "number = ?", id)
+	result := sc.DB.First(&subregion, "number = ?", id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Parish not found",
+			"message": "Subregion not found",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": parish,
+		"data": subregion,
 	})
 }
 
-func (pc *ParishController) CreateParish(c *gin.Context) {
-	var input models.Parish
+func (sc *SubRegionHandler) CreateSubRegion(c *gin.Context) {
+	var input models.SubRegion
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid input",
@@ -60,10 +60,10 @@ func (pc *ParishController) CreateParish(c *gin.Context) {
 		return
 	}
 
-	result := pc.DB.Create(&input)
+	result := sc.DB.Create(&input)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to create parish",
+			"message": "Failed to create subregion",
 			"error":   result.Error.Error(),
 		})
 		return
@@ -74,20 +74,20 @@ func (pc *ParishController) CreateParish(c *gin.Context) {
 	})
 }
 
-func (pc *ParishController) UpdateParish(c *gin.Context) {
+func (sc *SubRegionHandler) UpdateSubRegion(c *gin.Context) {
 	id := c.Param("id")
-	var parish models.Parish
+	var subregion models.SubRegion
 
-	result := pc.DB.First(&parish, "number = ?", id)
+	result := sc.DB.First(&subregion, "number = ?", id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Parish not found",
+			"message": "Subregion not found",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
-	var input models.Parish
+	var input models.SubRegion
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid input",
@@ -96,61 +96,61 @@ func (pc *ParishController) UpdateParish(c *gin.Context) {
 		return
 	}
 
-	result = pc.DB.Model(&parish).Updates(input)
+	result = sc.DB.Model(&subregion).Updates(input)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to update parish",
+			"message": "Failed to update subregion",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": parish,
+		"data": subregion,
 	})
 }
 
-func (pc *ParishController) DeleteParish(c *gin.Context) {
+func (sc *SubRegionHandler) DeleteSubRegion(c *gin.Context) {
 	id := c.Param("id")
-	var parish models.Parish
+	var subregion models.SubRegion
 
-	result := pc.DB.First(&parish, "number = ?", id)
+	result := sc.DB.First(&subregion, "number = ?", id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Parish not found",
+			"message": "Subregion not found",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
-	result = pc.DB.Delete(&parish)
+	result = sc.DB.Delete(&subregion)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to delete parish",
+			"message": "Failed to delete subregion",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Parish deleted successfully",
+		"message": "Subregion deleted successfully",
 	})
 }
 
-func (pc *ParishController) GetParishesByDistrict(c *gin.Context) {
-	districtID := c.Param("districtId")
-	var parishes []models.Parish
+func (sc *SubRegionHandler) GetSubRegionsByRegion(c *gin.Context) {
+	regionID := c.Param("regionId")
+	var subregions []models.SubRegion
 
-	result := pc.DB.Where("district_number = ?", districtID).Find(&parishes)
+	result := sc.DB.Where("region_number = ?", regionID).Find(&subregions)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to fetch parishes",
+			"message": "Failed to fetch subregions",
 			"error":   result.Error.Error(),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": parishes,
+		"data": subregions,
 	})
 }
