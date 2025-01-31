@@ -29,18 +29,6 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
-// @Summary Create district
-// @Description Create a new district
-// @Tags Districts
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param district body models.District true "District details"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/districts [post]
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
 	var payload models.District
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -66,16 +54,6 @@ func (h *DistrictHandler) createDistrict(c *gin.Context) {
 	})
 }
 
-// @Summary List districts
-// @Description Get a paginated list of all districts
-// @Tags Districts
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.District
-// @Failure 500 {object} gin.H
-// @Router /v1/districts [get]
 func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 	pagination := commons.GetPaginationParams(c)
 
@@ -88,15 +66,6 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 	c.JSON(http.StatusOK, districts)
 }
 
-// @Summary Get district by number
-// @Description Get a district by its unique number
-// @Tags Districts
-// @Accept json
-// @Produce json
-// @Param number path string true "District Number"
-// @Success 200 {object} models.District
-// @Failure 404 {object} gin.H
-// @Router /v1/districts/{number} [get]
 func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	districtNumber := c.Param("number")
 
@@ -109,15 +78,6 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	c.JSON(http.StatusOK, district)
 }
 
-// @Summary Get district by name
-// @Description Get a district by its name
-// @Tags Districts
-// @Accept json
-// @Produce json
-// @Param name path string true "District Name"
-// @Success 200 {object} models.District
-// @Failure 404 {object} gin.H
-// @Router /v1/districts/name/{name} [get]
 func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	districtName := c.Param("name")
 

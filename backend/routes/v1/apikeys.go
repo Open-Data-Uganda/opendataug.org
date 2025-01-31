@@ -47,18 +47,6 @@ func generateAPIKey() (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
-// @Summary Create API key
-// @Description Create a new API key for the authenticated user
-// @Tags API Keys
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body CreateAPIKeyRequest true "API key creation request"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/api-keys [post]
 func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 	var req CreateAPIKeyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -99,16 +87,6 @@ func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 	})
 }
 
-// @Summary List API keys
-// @Description Get a list of all API keys for the authenticated user
-// @Tags API Keys
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {array} APIKeyResponse
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/api-keys [get]
 func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -145,19 +123,6 @@ func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// @Summary Delete API key
-// @Description Delete an API key by its ID
-// @Tags API Keys
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param id path string true "API Key ID"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/api-keys/{id} [delete]
 func (h *APIKeyHandler) deleteAPIKey(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {

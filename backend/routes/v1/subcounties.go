@@ -31,18 +31,6 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
-// @Summary Create subcounty
-// @Description Create a new subcounty
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param subcounty body models.SubCounty true "Subcounty details"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/subcounties [post]
 func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	var payload models.SubCounty
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -66,16 +54,6 @@ func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	})
 }
 
-// @Summary List subcounties
-// @Description Get a paginated list of all subcounties
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.SubCounty
-// @Failure 500 {object} gin.H
-// @Router /v1/subcounties [get]
 func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
 	pagination := commons.GetPaginationParams(c)
 
@@ -91,15 +69,6 @@ func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
 	c.JSON(http.StatusOK, subcounties)
 }
 
-// @Summary Get subcounty
-// @Description Get a subcounty by its number
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Param number path string true "Subcounty Number"
-// @Success 200 {object} models.SubCounty
-// @Failure 404 {object} gin.H
-// @Router /v1/subcounties/{number} [get]
 func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 	number := c.Param("number")
 
@@ -113,20 +82,6 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 	c.JSON(http.StatusOK, subcounty)
 }
 
-// @Summary Update subcounty
-// @Description Update an existing subcounty
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param number path string true "Subcounty Number"
-// @Param subcounty body models.SubCounty true "Updated subcounty details"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/subcounties/{number} [put]
 func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	number := c.Param("number")
 
@@ -155,18 +110,6 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	})
 }
 
-// @Summary Delete subcounty
-// @Description Delete a subcounty
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param number path string true "Subcounty Number"
-// @Success 200 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/subcounties/{number} [delete]
 func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 	number := c.Param("number")
 
@@ -186,17 +129,6 @@ func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 	})
 }
 
-// @Summary List parishes in subcounty
-// @Description Get a paginated list of all parishes in a subcounty
-// @Tags Subcounties
-// @Accept json
-// @Produce json
-// @Param number path string true "Subcounty Number"
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.Parish
-// @Failure 500 {object} gin.H
-// @Router /v1/subcounties/{number}/parishes [get]
 func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	number := c.Param("number")
 	pagination := commons.GetPaginationParams(c)
