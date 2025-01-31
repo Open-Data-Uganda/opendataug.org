@@ -31,16 +31,6 @@ func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
-// @Summary Get all counties
-// @Description Get a paginated list of all counties
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.County
-// @Failure 500 {object} gin.H
-// @Router /v1/counties [get]
 func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 	pagination := commons.GetPaginationParams(c)
 
@@ -53,16 +43,6 @@ func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 	c.JSON(http.StatusOK, counties)
 }
 
-// @Summary Create a new county
-// @Description Create a new county with the provided details
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param county body models.County true "County details"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/counties [post]
 func (h *CountyHandler) createCounty(c *gin.Context) {
 	var payload models.County
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -92,15 +72,6 @@ func (h *CountyHandler) createCounty(c *gin.Context) {
 	})
 }
 
-// @Summary Get a county by ID
-// @Description Get detailed information about a specific county
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param id path string true "County ID"
-// @Success 200 {object} models.County
-// @Failure 404 {object} gin.H
-// @Router /v1/counties/{id} [get]
 func (h *CountyHandler) handleGetCounty(c *gin.Context) {
 	id := c.Param("id")
 
@@ -113,18 +84,6 @@ func (h *CountyHandler) handleGetCounty(c *gin.Context) {
 	c.JSON(http.StatusOK, county)
 }
 
-// @Summary Update a county
-// @Description Update an existing county's information
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param id path string true "County ID"
-// @Param county body models.County true "Updated county details"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/counties/{id} [put]
 func (h *CountyHandler) updateCounty(c *gin.Context) {
 	id := c.Param("id")
 
@@ -160,16 +119,6 @@ func (h *CountyHandler) updateCounty(c *gin.Context) {
 	})
 }
 
-// @Summary Delete a county
-// @Description Delete a county by its ID
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param id path string true "County ID"
-// @Success 200 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/counties/{id} [delete]
 func (h *CountyHandler) deleteCounty(c *gin.Context) {
 	id := c.Param("id")
 
@@ -189,15 +138,6 @@ func (h *CountyHandler) deleteCounty(c *gin.Context) {
 	})
 }
 
-// @Summary Get subcounties of a county
-// @Description Get all subcounties belonging to a specific county
-// @Tags Counties
-// @Accept json
-// @Produce json
-// @Param id path string true "County ID"
-// @Success 200 {array} models.SubCounty
-// @Failure 404 {object} gin.H
-// @Router /v1/counties/{id}/subcounties [get]
 func (h *CountyHandler) getSubCounties(c *gin.Context) {
 	id := c.Param("id")
 

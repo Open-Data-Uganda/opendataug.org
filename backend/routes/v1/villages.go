@@ -30,18 +30,6 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
-// @Summary Create village
-// @Description Create a new village
-// @Tags Villages
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param village body models.Village true "Village details"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/villages [post]
 func (h *VillageHandler) createVillage(c *gin.Context) {
 	var payload models.Village
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -65,20 +53,6 @@ func (h *VillageHandler) createVillage(c *gin.Context) {
 	})
 }
 
-// @Summary Update village
-// @Description Update an existing village
-// @Tags Villages
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param number path string true "Village Number"
-// @Param village body models.Village true "Updated village details"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/villages/{number} [put]
 func (h *VillageHandler) updateVillage(c *gin.Context) {
 	id := c.Param("number")
 
@@ -107,18 +81,6 @@ func (h *VillageHandler) updateVillage(c *gin.Context) {
 	})
 }
 
-// @Summary Delete village
-// @Description Delete a village
-// @Tags Villages
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param number path string true "Village Number"
-// @Success 200 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/villages/{number} [delete]
 func (h *VillageHandler) deleteVillage(c *gin.Context) {
 	id := c.Param("number")
 
@@ -138,16 +100,6 @@ func (h *VillageHandler) deleteVillage(c *gin.Context) {
 	})
 }
 
-// @Summary List villages
-// @Description Get a paginated list of all villages
-// @Tags Villages
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.Village
-// @Failure 500 {object} gin.H
-// @Router /v1/villages [get]
 func (h *VillageHandler) handleAllVillages(c *gin.Context) {
 	pagination := commons.GetPaginationParams(c)
 
@@ -160,15 +112,6 @@ func (h *VillageHandler) handleAllVillages(c *gin.Context) {
 	c.JSON(http.StatusOK, villages)
 }
 
-// @Summary Get village
-// @Description Get a village by its number
-// @Tags Villages
-// @Accept json
-// @Produce json
-// @Param number path string true "Village Number"
-// @Success 200 {object} models.Village
-// @Failure 404 {object} gin.H
-// @Router /v1/villages/{number} [get]
 func (h *VillageHandler) handleGetVillage(c *gin.Context) {
 	id := c.Param("number")
 

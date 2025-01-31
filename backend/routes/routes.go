@@ -12,19 +12,6 @@ import (
 	v1 "opendataug.org/routes/v1"
 )
 
-// @title Uganda Data API
-// @version 1.0
-// @description This is the API server for Uganda Data.
-// @termsOfService http://swagger.io/terms/
-
-// @host localhost:8080
-// @BasePath /api/v1
-
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name X-API-Key
-// @description API Key authentication
-
 func SetupRouter(db *database.Database) *gin.Engine {
 	router := gin.Default()
 

@@ -31,16 +31,6 @@ func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
-// @Summary Get all regions
-// @Description Get a paginated list of all regions
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Number of items per page" default(10)
-// @Success 200 {array} models.RegionResponse
-// @Failure 500 {object} gin.H
-// @Router /v1/regions [get]
 func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 	pagination := commons.GetPaginationParams(c)
 
@@ -61,15 +51,6 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// @Summary Get a region by ID
-// @Description Get detailed information about a specific region
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param id path string true "Region ID"
-// @Success 200 {object} models.RegionResponse
-// @Failure 404 {object} gin.H
-// @Router /v1/regions/{id} [get]
 func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 	id := c.Param("id")
 
@@ -87,16 +68,6 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// @Summary Create a new region
-// @Description Create a new region with the provided information
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param region body models.Region true "Region information"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/regions [post]
 func (h *RegionHandler) createRegion(c *gin.Context) {
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -125,18 +96,6 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 	})
 }
 
-// @Summary Update a region
-// @Description Update an existing region's information
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param id path string true "Region ID"
-// @Param region body models.Region true "Updated region information"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/regions/{id} [put]
 func (h *RegionHandler) updateRegion(c *gin.Context) {
 	id := c.Param("id")
 
@@ -171,16 +130,6 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 	})
 }
 
-// @Summary Delete a region
-// @Description Delete an existing region
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param id path string true "Region ID"
-// @Success 200 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
-// @Router /v1/regions/{id} [delete]
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	id := c.Param("id")
 
@@ -200,15 +149,6 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	})
 }
 
-// @Summary Get districts in a region
-// @Description Get all districts belonging to a specific region
-// @Tags regions
-// @Accept json
-// @Produce json
-// @Param id path string true "Region ID"
-// @Success 200 {array} models.District
-// @Failure 404 {object} gin.H
-// @Router /v1/regions/{id}/districts [get]
 func (h *RegionHandler) getDistricts(c *gin.Context) {
 	id := c.Param("id")
 
