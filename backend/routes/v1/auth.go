@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,12 @@ func NewAuthHandler(db *database.Database) *AuthHandler {
 }
 
 func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "healthy",
+		})
+	})
+
 	auth := r.Group("/auth")
 	{
 		auth.GET("/github", h.githubProvider.HandleLogin)
