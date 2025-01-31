@@ -4,10 +4,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"opendataug.org/database"
-	_ "opendataug.org/docs"
 	"opendataug.org/middleware"
 	v1 "opendataug.org/routes/v1"
 )
@@ -21,10 +18,7 @@ func SetupRouter(db *database.Database) *gin.Engine {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	// Swagger route
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	v1Group := router.Group("/api/v1")
+	v1Group := router.Group("/v1")
 	{
 		// Public routes
 		authHandler := v1.NewAuthHandler(db)
