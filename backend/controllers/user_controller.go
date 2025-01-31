@@ -1,8 +1,17 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"net/mail"
+
+	"gorm.io/gorm"
+	"opendataug.org/commons"
 	"opendataug.org/database"
 	"opendataug.org/models"
+	"opendataug.org/utils"
 )
 
 type UserController struct {
@@ -10,36 +19,242 @@ type UserController struct {
 }
 
 func NewUserController(db *database.Database) *UserController {
-	return &UserController{db: db}
+	return &UserController{
+		db: db,
+	}
 }
 
-func (c *UserController) CreateUser(user *models.User) error {
+type LoginResponse struct {
+	AccessToken  *string `json:"access_token"`
+	RefreshToken *string `json:"refresh_token"`
+	UserNumber   string  `json:"user_number"`
+	Role         string  `json:"role"`
+	ExpiresIn    *int64  `json:"expires_in"`
+}
+
+type ResetPasswordInput struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type UserProfileResponse struct {
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	FirstName string `json:"first_name"`
+	OtherName string `json:"other_name"`
+}
+
+func (c *UserController) FindByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := c.db.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+	return &user, nil
+}
+
+func (c *UserController) FindByNumber(number string) (*models.User, error) {
+	var user models.User
+	if err := c.db.DB.Where("number = ?", number).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+	return &user, nil
+}
+
+func (c *UserController) FindByAuthID(provider, authID string) (*models.User, error) {
+	var user models.User
+	if err := c.db.DB.Where("provider = ? AND auth_number = ?", provider, authID).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+	return &user, nil
+}
+
+func (c *UserController) UpdateStatus(userNumber, status string) error {
+	result := c.db.DB.Model(&models.User{}).Where("number = ?", userNumber).Update("status", status)
+	if result.Error != nil {
+		return fmt.Errorf("failed to update status: %w", result.Error)
+	}
+	return nil
+}
+
+func (c *UserController) Create(user *models.User) error {
 	return c.db.DB.Create(user).Error
 }
 
-func (c *UserController) GetUserByEmail(email string) (*models.User, error) {
+func (c *UserController) GetPasswordByUserNumber(userNumber string) (*models.UserPassword, error) {
+	var password models.UserPassword
+	if err := c.db.DB.Where("user_number = ?", userNumber).First(&password).Error; err != nil {
+		return nil, fmt.Errorf("password not found: %w", err)
+	}
+	return &password, nil
+}
+
+func (c *UserController) SavePasswordReset(reset *models.PasswordReset) error {
+	return c.db.DB.Save(reset).Error
+}
+
+func (c *UserController) FindPasswordResetByToken(token string) (*models.PasswordReset, error) {
+	var reset models.PasswordReset
+	if err := c.db.DB.Where("token = ?", token).First(&reset).Error; err != nil {
+		return nil, fmt.Errorf("reset token not found: %w", err)
+	}
+	return &reset, nil
+}
+
+func (c *UserController) ExecutePasswordReset(tx *gorm.DB, userNumber string, hashedPassword string) error {
+	var userPassword models.UserPassword
+	if err := tx.Where("user_number = ?", userNumber).First(&userPassword).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("failed to check existing password: %w", err)
+		}
+		userPassword = models.UserPassword{
+			Number:       utils.UUIDGenerator(),
+			UserPassword: hashedPassword,
+			UserNumber:   userNumber,
+		}
+		return tx.Create(&userPassword).Error
+	}
+
+	return tx.Model(&userPassword).Update("user_password", hashedPassword).Error
+}
+
+func (c *UserController) AuthenticateUser(email, password string) (*models.User, error) {
+	if _, err := mail.ParseAddress(email); err != nil {
+		return nil, fmt.Errorf("invalid email address")
+	}
+
+	user, err := c.FindByEmail(strings.ToLower(email))
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Status != "ACTIVE" {
+		return nil, fmt.Errorf("account is not active")
+	}
+
+	userPassword, err := c.GetPasswordByUserNumber(user.Number)
+	if err != nil {
+		return nil, fmt.Errorf("password not set")
+	}
+
+	if _, err := commons.ComparePassword(userPassword.UserPassword, password); err != nil {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	return user, nil
+}
+
+func (c *UserController) RefreshUserSession(refreshToken string) (*commons.TokenDetails, error) {
+	return commons.RefreshToken(refreshToken)
+}
+
+func (c *UserController) InitiatePasswordReset(email string) (string, error) {
+	user, err := c.FindByEmail(email)
+	if err != nil {
+		return "", fmt.Errorf("user not found")
+	}
+
+	resetToken := utils.UUIDGenerator()
+
+	passwordReset := &models.PasswordReset{
+		Token:      resetToken,
+		UserNumber: user.Number,
+	}
+
+	if err := c.SavePasswordReset(passwordReset); err != nil {
+		return "", fmt.Errorf("failed to save reset token: %w", err)
+	}
+
+	return resetToken, nil
+}
+
+func (c *UserController) SetNewPassword(token, newPassword, confirmPassword string) error {
+	if newPassword != confirmPassword {
+		return fmt.Errorf("passwords do not match")
+	}
+
+	reset, err := c.FindPasswordResetByToken(token)
+	if err != nil {
+		return fmt.Errorf("invalid or expired reset token")
+	}
+
+	hashedPassword, err := commons.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password")
+	}
+
+	tx := c.db.DB.Begin()
+
+	// Set user status to ACTIVE
+	if err := tx.Model(&models.User{}).Where("number = ?", reset.UserNumber).Update("status", "ACTIVE").Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to activate user account: %w", err)
+	}
+
+	if err := c.ExecutePasswordReset(tx, reset.UserNumber, hashedPassword); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to reset password: %w", err)
+	}
+
+	// Mark reset token as used
+	if err := tx.Model(reset).Update("status", "INACTIVE").Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update reset token: %w", err)
+	}
+
+	return tx.Commit().Error
+}
+
+func (c *UserController) InvalidateSession(refreshToken string) error {
+	if refreshToken == "" {
+		return fmt.Errorf("missing refresh token")
+	}
+
+	_, err := commons.ValidateToken(refreshToken, "refresh")
+	if err != nil {
+		return fmt.Errorf("invalid refresh token: %w", err)
+	}
+
+	return nil
+}
+
+func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, *commons.TokenDetails, error) {
+	tokenDetails, err := commons.CreateToken(user.Number)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create token: %w", err)
+	}
+
+	response := &LoginResponse{
+		AccessToken:  tokenDetails.AccessToken,
+		RefreshToken: tokenDetails.RefreshToken,
+		UserNumber:   user.Number,
+		Role:         user.Role,
+		ExpiresIn:    tokenDetails.AccessTokenExpiresIn,
+	}
+
+	return response, tokenDetails, nil
+}
+
+func (c *UserController) GetUserProfile(userNumber string) (*UserProfileResponse, error) {
+	user, err := c.FindByNumber(userNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return &UserProfileResponse{
+		Email:     user.Email,
+		Name:      user.FirstName + " " + user.OtherName,
+		FirstName: user.FirstName,
+		OtherName: user.OtherName,
+	}, nil
+}
+
+func (c *UserController) CheckEmailExists(email string) (bool, error) {
 	var user models.User
 	result := c.db.DB.Where("email = ?", email).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &user, nil
+	return result.RowsAffected > 0, result.Error
 }
 
-func (c *UserController) GetUserByAuthID(provider, authID string) (*models.User, error) {
+func (c *UserController) CheckPhoneExists(phone string) (bool, error) {
 	var user models.User
-	result := c.db.DB.Where("provider = ? AND auth_number = ?", provider, authID).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &user, nil
-}
-
-func (c *UserController) GetUserByNumber(number string) (*models.User, error) {
-	var user models.User
-	result := c.db.DB.Where("number = ?", number).First(&user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &user, nil
+	result := c.db.DB.Where("phone = ?", phone).First(&user)
+	return result.RowsAffected > 0, result.Error
 }

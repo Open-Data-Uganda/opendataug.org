@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -59,9 +60,15 @@ func NewDatabase(config *Config) (*Database, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&models.District{}, &models.User{}, &models.APIKey{})
+	err = db.AutoMigrate(
+		&models.District{},
+		&models.User{},
+		&models.APIKey{},
+		&models.UserPassword{},
+		&models.PasswordReset{},
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
 	return &Database{DB: db}, nil
