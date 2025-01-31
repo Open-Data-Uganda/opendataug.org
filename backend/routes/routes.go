@@ -50,7 +50,6 @@ func SetupRouter(db *database.Database) *gin.Engine {
 			apiKeyHandler.RegisterRoutes(protected)
 
 		}
-
 	}
 
 	return router
