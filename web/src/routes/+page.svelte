@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BrandShowcase from "$lib/components/BrandShowcase.svelte";
   import Container from "$lib/components/Container.svelte";
   import FAQ from "$lib/components/FAQ.svelte";
   import Footer from "$lib/components/Footer.svelte";
@@ -175,6 +176,7 @@
       </div>
     </div>
 
+    <BrandShowcase />
     <FAQ />
     <Footer />
   </div>
