@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { useQueryClient } from '@tanstack/react-query';
 import Actions from '../components/Actions';
 import CreateButton from '../components/Buttons/CreateButton';
 import Container from '../components/Container';
@@ -11,24 +12,29 @@ import TableContainer from '../components/Tables/TableContainer';
 import { notifyError, notifySuccess } from '../components/toasts';
 import useDeleteRequest from '../hooks/useDeleteRequest';
 import useGetRequest from '../hooks/useGetRequest';
+import usePostRequest from '../hooks/usePostRequest';
 import DefaultLayout from '../layout/DefaultLayout';
 import { Quotation } from '../types';
 
 const Overview: React.FC = () => {
-  const { data, isError, isLoading } = useGetRequest(`quotations?page=1&limit=20`, `quotations`);
+  const { data, isError, isLoading } = useGetRequest({
+    url: 'api-keys',
+    queryKey: ['api-keys']
+  });
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState('');
-  const deleteQuotation = useDeleteRequest('quotations', `quotations/${selected}`);
+  const deleteAPIKey = useDeleteRequest('api-keys', `api-keys/${selected}`);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [visibleId, setVisibleId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     try {
-      await deleteQuotation.mutateAsync();
+      await deleteAPIKey.mutateAsync();
       setShowModal(false);
-      notifySuccess('Quotation deleted');
+      notifySuccess('API Key deleted');
     } catch (err) {
-      notifyError('Quotation not deleted');
+      notifyError('API Key not deleted');
       setShowModal(false);
     }
   };
@@ -50,24 +56,35 @@ const Overview: React.FC = () => {
 
   const getHiddenValue = (value: string) => '•'.repeat(value.length);
 
-  const handleCreateKey = async (name: string) => {
+  const { mutateAsync } = usePostRequest({
+    url: 'api-keys',
+    queryKey: 'api-keys'
+  });
+
+  const queryClient = useQueryClient();
+
+  const handleCreateAPIKey = async (name: any) => {
+    setLoading(true);
     try {
-      // Implement your API key creation logic here
-      console.log('Creating API key with name:', name);
+      await mutateAsync(name);
+      notifySuccess('API Key created successfully');
     } catch (error) {
-      console.error('Error creating API key:', error);
+      notifyError('Error occurred while creating the API Key');
+    } finally {
+      setLoading(false);
+      queryClient.invalidateQueries({ queryKey: ['api-keys'] });
     }
   };
 
   return (
     <DefaultLayout>
       {showModal && (
-        <DeleteModal handleClick={handleDelete} title="Delete Customer" handleShow={() => setShowModal(!showModal)} />
+        <DeleteModal handleClick={handleDelete} title="Delete API Key" handleShow={() => setShowModal(!showModal)} />
       )}
 
       <Container>
         <div className="flex flex-row justify-end">
-          <CreateButton onCreateKey={handleCreateKey} />
+          <CreateButton onCreateKey={handleCreateAPIKey} />
         </div>
 
         <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">

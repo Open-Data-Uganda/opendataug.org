@@ -28,7 +28,7 @@ const CreateButton = ({ onCreateKey }: CreateButtonProps) => {
     resolver: zodResolver(APIKeySchema)
   });
 
-  const nameValue = watch('name', ''); // Watch the name field
+  const nameValue = watch('name');
 
   const onSubmit = async (data: APIKeyFormData) => {
     try {

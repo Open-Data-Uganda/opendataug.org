@@ -1,24 +1,26 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { backendUrl } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 interface PostRequestProps {
   url: string;
-  queryKey: any;
+  queryKey: string;
 }
 
 const usePostRequest = ({ url, queryKey }: PostRequestProps) => {
-  const token = localStorage.getItem('token');
-  const userNumber = localStorage.getItem('userNumber');
   const queryClient = useQueryClient();
+  const { userNumber, accessToken } = useAuth();
 
   return useMutation({
     mutationFn: async (body) => {
       try {
-        const response = await axios.post(`${backendUrl}/v1/${url}`, body, {
+        const response = await axios.post(`${backendUrl}/${url}`, body, {
+          withCredentials: true,
           headers: {
-            Authorization: `Bearer ${token}`,
-            'User-Number': userNumber
+            'Content-Type': 'application/json',
+            'User-Number': userNumber,
+            Authorization: `Bearer ${accessToken}`
           }
         });
         return response.data;

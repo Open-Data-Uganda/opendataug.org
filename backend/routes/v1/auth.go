@@ -401,7 +401,7 @@ func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
 
 		claims, err := h.jwtService.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token", "err": err.Error()})
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
 			c.Abort()
 			return
 		}

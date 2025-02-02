@@ -69,7 +69,7 @@ func (s JWTService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	// Validate required fields and their types
-	requiredClaims := []string{"sub", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type"}
+	requiredClaims := []string{"user_number", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type"}
 	for _, claim := range requiredClaims {
 		if _, ok := claims[claim]; !ok {
 			return nil, fmt.Errorf("validate: missing required claim: %s", claim)
@@ -119,25 +119,25 @@ func (s *JWTService) CreateToken(userNumber string) (*TokenDetails, error) {
 	}
 
 	accessClaims := jwt.MapClaims{
-		"sub":        userNumber,
-		"token_uuid": td.AccessTokenUUID,
-		"exp":        td.AccessTokenExpiresIn,
-		"iat":        now.Unix(),
-		"nbf":        now.Unix(),
-		"iss":        "opendataug.org",
-		"aud":        "opendataug.org",
-		"type":       "access",
+		"user_number": userNumber,
+		"token_uuid":  td.AccessTokenUUID,
+		"exp":         td.AccessTokenExpiresIn,
+		"iat":         now.Unix(),
+		"nbf":         now.Unix(),
+		"iss":         "opendataug.org",
+		"aud":         "opendataug.org",
+		"type":        "access",
 	}
 
 	refreshClaims := jwt.MapClaims{
-		"sub":        userNumber,
-		"token_uuid": td.RefreshTokenUUID,
-		"exp":        td.RefreshTokenExpiresIn,
-		"iat":        now.Unix(),
-		"nbf":        now.Unix(),
-		"iss":        "opendataug.org",
-		"aud":        "opendataug.org",
-		"type":       "refresh",
+		"user_number": userNumber,
+		"token_uuid":  td.RefreshTokenUUID,
+		"exp":         td.RefreshTokenExpiresIn,
+		"iat":         now.Unix(),
+		"nbf":         now.Unix(),
+		"iss":         "opendataug.org",
+		"aud":         "opendataug.org",
+		"type":        "refresh",
 	}
 
 	*td.AccessToken, err = jwt.NewWithClaims(jwt.SigningMethodRS256, accessClaims).SignedString(key)

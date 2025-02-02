@@ -9,7 +9,6 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
-import { PriceProvider } from './context/PriceContext';
 import './css/style.css';
 
 const queryClient = new QueryClient({
@@ -33,13 +32,11 @@ const Providers = ({ children }: { children: ReactNode }) => {
     <AuthProvider>
       <Router>
         <QueryClientProvider client={queryClient}>
-          <PriceProvider>
-            <ThemeProvider theme={customTheme}>
-              {children}
-              <ToastContainer />
-              <ReactQueryDevtools />
-            </ThemeProvider>
-          </PriceProvider>
+          <ThemeProvider theme={customTheme}>
+            {children}
+            <ToastContainer />
+            <ReactQueryDevtools />
+          </ThemeProvider>
         </QueryClientProvider>
       </Router>
     </AuthProvider>

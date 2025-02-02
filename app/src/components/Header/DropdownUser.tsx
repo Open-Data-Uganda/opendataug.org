@@ -26,22 +26,29 @@ const DropdownUser = () => {
 
   // close if the esc key is pressed
   useEffect(() => {
-    const keyHandler = ({ keyCode }: KeyboardEvent) => {
-      if (!dropdownOpen || keyCode !== 27) return;
+    const keyHandler = ({ key }: KeyboardEvent) => {
+      if (!dropdownOpen || key !== 'Escape') return;
       setDropdownOpen(false);
     };
     document.addEventListener('keydown', keyHandler);
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
-  const { data } = useGetRequest('profile', 'profile');
+  const { data: profile, isLoading } = useGetRequest({
+    url: 'auth/profile',
+    queryKey: 'profile'
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="relative">
       <Link ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" to="#">
         <span className="hidden text-right text-13   lg:block">
-          <span className="block text-sm font-medium capitalize text-black dark:text-white">{data?.data.name}</span>
-          <span className="block text-xs">{data?.data.email}</span>
+          <span className="block text-sm font-medium capitalize text-black dark:text-white">{profile?.name}</span>
+          <span className="block text-xs">{profile?.data.email}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">

@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-import { notifyError } from '../../components/toasts';
+import { notifyError, notifySuccess } from '../../components/toasts';
+import { useAuth } from '../../context/AuthContext';
 import { SignUpSchema } from '../../types/schemas';
 
 type Inputs = z.infer<typeof SignUpSchema>;
@@ -14,10 +15,13 @@ const SignUp: React.FC = () => {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const { userNumber, isAuthenticated, userRole, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors }
   } = useForm<Inputs>({
     resolver: zodResolver(SignUpSchema)
@@ -27,15 +31,22 @@ const SignUp: React.FC = () => {
     setLoading(true);
     try {
       setDisabled(true);
-      // Implement your signup logic here
       console.log(data);
       setDisabled(false);
+      notifySuccess('An email has been sent');
+      reset();
     } catch (error) {
       notifyError((error as Error).message);
       setDisabled(false);
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && userNumber && userRole) {
+      navigate('/dashboard');
+    }
+  }, [isLoading, isAuthenticated, userNumber, userRole, navigate]);
 
   return (
     <div className=" h-screen">
@@ -59,7 +70,7 @@ const SignUp: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid lg:grid-cols-2 lg:gap-4">
                 <Input
                   label="First name"
                   type="text"

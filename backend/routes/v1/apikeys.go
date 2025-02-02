@@ -44,7 +44,8 @@ func generateAPIKey() (string, error) {
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
-	return base64.URLEncoding.EncodeToString(bytes), nil
+	randomString := base64.URLEncoding.EncodeToString(bytes)
+	return "UG_" + randomString, nil
 }
 
 func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
