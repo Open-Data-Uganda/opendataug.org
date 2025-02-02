@@ -21,7 +21,7 @@ func (c *APIKeyController) CreateAPIKey(apiKey *models.APIKey) error {
 	return c.db.DB.Create(apiKey).Error
 }
 
-func (c *APIKeyController) DeleteAPIKey(userID string, keyID uuid.UUID) error {
+func (c *APIKeyController) DeleteAPIKey(userID string, keyID string) error {
 	result := c.db.DB.Where("user_number = ? AND number = ?", userID, keyID).Delete(&models.APIKey{})
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
@@ -58,4 +58,17 @@ func (c *APIKeyController) UpdateAPIKeyUsage(apiKeyID string) error {
 			"usage_count":  gorm.Expr("usage_count + 1"),
 		})
 	return result.Error
+}
+
+func (c *APIKeyController) APIKeyNameExists(userNumber string, name string) (bool, error) {
+	var count int64
+	result := c.db.DB.Model(&models.APIKey{}).
+		Where("user_number = ? AND name = ?", userNumber, name).
+		Count(&count)
+
+	if result.Error != nil {
+		return false, result.Error
+	}
+
+	return count > 0, nil
 }

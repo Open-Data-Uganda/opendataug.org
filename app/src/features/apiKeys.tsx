@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useQueryClient } from '@tanstack/react-query';
 import Actions from '../components/Actions';
-import CreateButton from '../components/Buttons/CreateButton';
 import Container from '../components/Container';
 import { TableLoader } from '../components/Loaders/TableLoader';
 import { DeleteModal } from '../components/Modals/DeleteModal';
@@ -15,6 +14,7 @@ import useGetRequest from '../hooks/useGetRequest';
 import usePostRequest from '../hooks/usePostRequest';
 import DefaultLayout from '../layout/DefaultLayout';
 import { Quotation } from '../types';
+import CreateAPIKey from './CreateAPIKey';
 
 const Overview: React.FC = () => {
   const { data, isError, isLoading } = useGetRequest({
@@ -63,10 +63,10 @@ const Overview: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const handleCreateAPIKey = async (name: any) => {
+  const handleCreateAPIKey = async (data: any) => {
     setLoading(true);
     try {
-      await mutateAsync(name);
+      await mutateAsync(data.name);
       notifySuccess('API Key created successfully');
     } catch (error) {
       notifyError('Error occurred while creating the API Key');
@@ -84,7 +84,7 @@ const Overview: React.FC = () => {
 
       <Container>
         <div className="flex flex-row justify-end">
-          <CreateButton onCreateKey={handleCreateAPIKey} />
+          <CreateAPIKey onCreateKey={handleCreateAPIKey} />
         </div>
 
         <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">

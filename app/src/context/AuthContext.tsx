@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { notifyError } from '../components/toasts';
 import { backendUrl } from '../config';
 
@@ -106,29 +106,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    checkAuthStatus();
-
-    const refreshInterval = setInterval(
-      () => {
-        checkAuthStatus();
-      },
-      4 * 60 * 1000
-    );
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkAuthStatus();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(refreshInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
 
   return (
     <AuthContext.Provider

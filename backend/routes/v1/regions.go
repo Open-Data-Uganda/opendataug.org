@@ -23,11 +23,11 @@ func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup) {
 	regions := r.Group("/regions")
 	{
 		regions.GET("", h.handleAllRegions)
-		regions.GET("/:id", h.handleGetRegion)
+		regions.GET("/:number", h.handleGetRegion)
 		regions.POST("", h.createRegion)
-		regions.PUT("/:id", h.updateRegion)
-		regions.DELETE("/:id", h.deleteRegion)
-		regions.GET("/:id/districts", h.getDistricts)
+		regions.PUT("/:number", h.updateRegion)
+		regions.DELETE("/:number", h.deleteRegion)
+		regions.GET("/:number/districts", h.getDistricts)
 	}
 }
 
@@ -52,10 +52,10 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 }
 
 func (h *RegionHandler) handleGetRegion(c *gin.Context) {
-	id := c.Param("id")
+	number := c.Param("number")
 
 	var region models.Region
-	if err := h.db.DB.First(&region, "number = ?", id).Error; err != nil {
+	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
 		return
 	}
@@ -97,10 +97,10 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) updateRegion(c *gin.Context) {
-	id := c.Param("id")
+	number := c.Param("number")
 
 	var region models.Region
-	if err := h.db.DB.First(&region, "number = ?", id).Error; err != nil {
+	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
 		return
 	}
@@ -113,7 +113,7 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 	// Check if another region already has this name
 	var existingRegion models.Region
-	if err := h.db.DB.Where("name = ? AND number != ?", payload.Name, id).First(&existingRegion).Error; err == nil {
+	if err := h.db.DB.Where("name = ? AND number != ?", payload.Name, number).First(&existingRegion).Error; err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Region with this name already exists"})
 		return
 	}
@@ -131,10 +131,10 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
-	id := c.Param("id")
+	number := c.Param("number")
 
 	var region models.Region
-	if err := h.db.DB.First(&region, "number = ?", id).Error; err != nil {
+	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
 		return
 	}
@@ -150,10 +150,10 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) getDistricts(c *gin.Context) {
-	id := c.Param("id")
+	number := c.Param("number")
 
 	var region models.Region
-	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", id).Error; err != nil {
+	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", number).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
 		return
 	}

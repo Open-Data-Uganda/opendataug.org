@@ -415,7 +415,7 @@ func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
 
 		var user models.User
 		if err := h.db.DB.Where("number = ?", userNumber).First(&user).Error; err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized", "usernumber": user.Name})
 			c.Abort()
 			return
 		}

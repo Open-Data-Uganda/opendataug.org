@@ -1,19 +1,24 @@
 package v1
 
 import (
-	"crypto/rand"
-	"encoding/base64"
+	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"opendataug.org/commons"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
 	"opendataug.org/models"
 )
+
+func init() {
+	source := rand.NewSource(time.Now().UnixNano())
+	rand.New(source)
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 type APIKeyHandler struct {
 	controller *controllers.APIKeyController
@@ -39,85 +44,97 @@ type CreateAPIKeyRequest struct {
 	ExpiresAt *time.Time `json:"expires_at"`
 }
 
-func generateAPIKey() (string, error) {
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
+func generateRandomString(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
-	randomString := base64.URLEncoding.EncodeToString(bytes)
-	return "UG_" + randomString, nil
+	return string(b)
+}
+
+func generateAPIKey() (string, error) {
+	randomStr := generateRandomString(8)
+	return "opu_" + commons.UUIDGenerator() + randomStr, nil
 }
 
 func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
-	var req CreateAPIKeyRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var payload CreateAPIKeyRequest
+
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	if payload.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "API Key name is required"})
 		return
 	}
 
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
 		return
 	}
 	currentUser := user.(*models.User)
 
+	exists, err := h.controller.APIKeyNameExists(currentUser.Number, payload.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to check API key name"})
+		return
+	}
+	if exists {
+		c.JSON(http.StatusConflict, gin.H{"message": "An API key with this name already exists"})
+		return
+	}
+
 	key, err := generateAPIKey()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate API key"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate API key"})
 		return
 	}
 
 	apiKey := &models.APIKey{
 		UserNumber: currentUser.Number,
 		Number:     commons.UUIDGenerator(),
-		Name:       req.Name,
+		Name:       payload.Name,
 		Key:        key,
-		ExpiresAt:  req.ExpiresAt,
+		ExpiresAt:  payload.ExpiresAt,
 	}
 
 	if err := h.controller.CreateAPIKey(apiKey); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create API key"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create API key"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "API key created successfully",
-		"key":     key,
-		"id":      apiKey.Number,
-	})
+	c.JSON(http.StatusCreated, gin.H{"message": "API Key created successfully", "key": apiKey.Key})
 }
 
 func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
 		return
 	}
 	currentUser := user.(*models.User)
 
 	keys, err := h.controller.GetAPIKeys(currentUser.Number)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch API keys"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch API keys"})
 		return
 	}
 
 	type APIKeyResponse struct {
-		Number     string     `json:"number"`
-		Name       string     `json:"name"`
-		LastUsedAt *time.Time `json:"last_used_at"`
-		ExpiresAt  *time.Time `json:"expires_at"`
-		CreatedAt  time.Time  `json:"created_at"`
+		Number    string    `json:"number"`
+		Name      string    `json:"name"`
+		CreatedAt time.Time `json:"created_at"`
 	}
 
 	response := make([]APIKeyResponse, len(keys))
 	for i, key := range keys {
 		response[i] = APIKeyResponse{
-			Number:     key.Number,
-			Name:       key.Name,
-			LastUsedAt: key.LastUsedAt,
-			ExpiresAt:  key.ExpiresAt,
-			CreatedAt:  key.CreatedAt,
+			Number:    key.Number,
+			Name:      key.Name,
+			CreatedAt: key.CreatedAt,
 		}
 	}
 
@@ -127,14 +144,14 @@ func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 func (h *APIKeyHandler) deleteAPIKey(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
 		return
 	}
 	currentUser := user.(*models.User)
 
-	keyNumber, err := uuid.Parse(c.Param("number"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid API key number"})
+	keyNumber := c.Param("id")
+	if keyNumber == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "API key number is missing"})
 		return
 	}
 
@@ -143,7 +160,7 @@ func (h *APIKeyHandler) deleteAPIKey(c *gin.Context) {
 		if err == gorm.ErrRecordNotFound {
 			status = http.StatusNotFound
 		}
-		c.JSON(status, gin.H{"error": "Failed to delete API key"})
+		c.JSON(status, gin.H{"message": "Failed to delete API key"})
 		return
 	}
 
