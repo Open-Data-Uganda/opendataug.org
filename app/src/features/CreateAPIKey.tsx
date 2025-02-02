@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { APIKeySchema } from '../../types/schemas';
-import Button from '../Button';
-import Input from '../Input';
-import Modal from '../Modal';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import Modal from '../components/Modal';
+import { APIKeySchema } from '../types/schemas';
 
 type APIKeyFormData = z.infer<typeof APIKeySchema>;
 
-interface CreateButtonProps {
+interface CreateAPIKeyProps {
   onCreateKey?: (name: string) => Promise<void>;
 }
 
-const CreateButton = ({ onCreateKey }: CreateButtonProps) => {
+const CreateAPIKey = ({ onCreateKey }: CreateAPIKeyProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -78,4 +78,4 @@ const CreateButton = ({ onCreateKey }: CreateButtonProps) => {
   );
 };
 
-export default CreateButton;
+export default CreateAPIKey;

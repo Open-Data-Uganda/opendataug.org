@@ -1,17 +1,48 @@
-import { Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import LoadingSpinner from './components/LoadingSpinner';
-import { getRouteElement, routes } from './routes';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { FallbackProvider } from './composables/FallbackProvider';
+import Overview from './features/apiKeys';
+import Login from './pages/auth/Login';
+import ResetPassword from './pages/auth/ResetPassword';
+import SetPassword from './pages/auth/SetPassword';
+import SignUp from './pages/auth/SignUp';
+import NotFound from './pages/NotFound';
+import PageNotFound from './pages/PageNotFound';
 
 const App = () => {
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
+  const [loading, setLoading] = useState(true);
+
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 50);
+  }, []);
+
+  return loading ? (
+    <div className="flex h-screen items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  ) : (
+    <FallbackProvider>
       <Routes>
-        {routes.map((route) => (
-          <Route key={route.path} path={route.path} element={getRouteElement(route)} />
-        ))}
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/set-password/:token" element={<SetPassword />} />
+        <Route path="*" element={<PageNotFound />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Overview />} />
+          <Route path="/dashboard/*" element={<NotFound />} />
+        </Route>
       </Routes>
-    </Suspense>
+    </FallbackProvider>
   );
 };
 
