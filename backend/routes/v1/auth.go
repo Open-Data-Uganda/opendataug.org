@@ -20,13 +20,15 @@ import (
 type AuthHandler struct {
 	db             *database.Database
 	userController *controllers.UserController
+	jwtService     *services.JWTService
 }
 
 func NewAuthHandler(db *database.Database) *AuthHandler {
-
+	jwtService := services.NewJWTService()
 	return &AuthHandler{
 		db:             db,
-		userController: controllers.NewUserController(db),
+		userController: controllers.NewUserController(db, jwtService),
+		jwtService:     jwtService,
 	}
 }
 
@@ -41,21 +43,20 @@ func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
 		auth.POST("/refresh", h.RefreshAccessToken)
 		auth.POST("/reset-password", h.ResetPassword)
 		auth.POST("/set-password", h.SetPassword)
-		auth.POST("/logout", h.LogoutUser)
-		auth.GET("/profile", h.Profile)
 		auth.POST("/register", h.RegisterUser)
+
+		protected := auth.Group("")
+		protected.Use(h.TokenAuthMiddleware())
+		{
+			protected.POST("/logout", h.LogoutUser)
+			protected.GET("/profile", h.Profile)
+		}
 	}
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var payload models.SignInRequest
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
-		return
-	}
-
-	payload.Prepare()
-	if err := payload.Validate(); err != nil {
+	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
 		return
 	}
@@ -96,7 +97,7 @@ func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
 	})
 }
 
-func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *commons.TokenDetails) {
+func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *services.TokenDetails) {
 	if tokens == nil || tokens.AccessToken == nil || tokens.RefreshToken == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token details"})
 		return
@@ -104,42 +105,51 @@ func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *commons.TokenDetail
 
 	secureValue := true
 	domainValue := os.Getenv("BASE_URL")
+	sameSite := http.SameSiteStrictMode
+
 	if os.Getenv("ENVIRONMENT") == "dev" {
 		secureValue = false
 		domainValue = ""
+		sameSite = http.SameSiteLaxMode
 	}
 
-	c.SetCookie(
-		"access_token",
-		*tokens.AccessToken,
-		int(services.AccessTokenDuration.Seconds()),
-		"/",
-		domainValue,
-		secureValue,
-		true,
-	)
+	c.SetSameSite(sameSite)
 
-	c.SetCookie(
-		"refresh_token",
-		*tokens.RefreshToken,
-		int(services.RefreshTokenDuration.Seconds()),
-		"/",
-		domainValue,
-		secureValue,
-		true,
-	)
+	accessCookie := &http.Cookie{
+		Name:     "access_token",
+		Value:    *tokens.AccessToken,
+		Path:     "/",
+		Domain:   domainValue,
+		MaxAge:   int(services.AccessTokenDuration.Seconds()),
+		Secure:   secureValue,
+		HttpOnly: true,
+		SameSite: sameSite,
+	}
+	http.SetCookie(c.Writer, accessCookie)
 
-	c.SetCookie(
-		"logged_in",
-		"true",
-		int(services.AccessTokenDuration.Seconds()),
-		"/",
-		domainValue,
-		secureValue,
-		false,
-	)
+	refreshCookie := &http.Cookie{
+		Name:     "refresh_token",
+		Value:    *tokens.RefreshToken,
+		Path:     "/",
+		Domain:   domainValue,
+		MaxAge:   int(services.RefreshTokenDuration.Seconds()),
+		Secure:   secureValue,
+		HttpOnly: true,
+		SameSite: sameSite,
+	}
+	http.SetCookie(c.Writer, refreshCookie)
 
-	c.SetSameSite(http.SameSiteStrictMode)
+	loggedInCookie := &http.Cookie{
+		Name:     "logged_in",
+		Value:    "true",
+		Path:     "/",
+		Domain:   domainValue,
+		MaxAge:   int(services.AccessTokenDuration.Seconds()),
+		Secure:   secureValue,
+		HttpOnly: false,
+		SameSite: sameSite,
+	}
+	http.SetCookie(c.Writer, loggedInCookie)
 }
 
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
@@ -254,14 +264,29 @@ func (h *AuthHandler) Profile(c *gin.Context) {
 }
 
 func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
-	c.SetCookie("access_token", "", -1, "/", "", false, true)
-	c.SetCookie("refresh_token", "", -1, "/", "", false, true)
-	c.SetCookie("logged_in", "", -1, "/", "", false, true)
+	domainValue := os.Getenv("BASE_URL")
+	if os.Getenv("ENVIRONMENT") == "dev" {
+		domainValue = ""
+	}
+
+	for _, cookieName := range []string{"access_token", "refresh_token", "logged_in"} {
+		cookie := &http.Cookie{
+			Name:     cookieName,
+			Value:    "",
+			Path:     "/",
+			Domain:   domainValue,
+			MaxAge:   -1,
+			Secure:   os.Getenv("ENVIRONMENT") != "dev",
+			HttpOnly: cookieName != "logged_in",
+			SameSite: http.SameSiteLaxMode,
+		}
+		http.SetCookie(c.Writer, cookie)
+	}
 }
 
 func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	var payload models.SignUpInput
-	if err := c.ShouldBindJSON(&payload); err != nil {
+	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
 		return
 	}
@@ -280,38 +305,38 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	var (
-		adminRole bool
-		role      string
-	)
-	if payload.Role == "ADMIN" {
-		adminRole = true
-		role = "ADMIN"
-	} else {
-		adminRole = false
-		role = "USER"
+	emailExists, _ := h.userController.CheckEmailExists(strings.ToLower(payload.Email))
+	if emailExists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Email is already in use"})
+		return
 	}
 
 	user := models.User{
-		Number:    userNumber,
+		Number:    commons.UUIDGenerator(),
 		FirstName: payload.FirstName,
 		OtherName: payload.OtherName,
 		Email:     strings.ToLower(payload.Email),
-		Role:      role,
-		Status:    userStatus,
-		IsAdmin:   adminRole,
+		Role:      map[bool]string{true: "ADMIN", false: "USER"}[payload.Role == "ADMIN"],
+		Status:    "INACTIVE",
+		IsAdmin:   payload.Role == "ADMIN",
 	}
 
-	emailExists, _ := h.userController.CheckEmailExists(user.Email)
+	emailExists, _ = h.userController.CheckEmailExists(user.Email)
 	if emailExists {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Email is already in use"})
 		return
 	}
 
 	tx := h.db.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	if err := tx.Create(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to register user", "err": err.Error()})
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to register user"})
 		return
 	}
 
@@ -321,9 +346,10 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		"user_number": userNumber,
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	userToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate reset token"})
 		return
 	}
@@ -359,6 +385,42 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User registered sucessfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+}
+
+func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.Request.Header.Get("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "No token provided"})
+			c.Abort()
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		claims, err := h.jwtService.ValidateToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token", "err": err.Error()})
+			c.Abort()
+			return
+		}
+
+		userNumber, ok := claims["user_number"].(string)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+			c.Abort()
+			return
+		}
+
+		var user models.User
+		if err := h.db.DB.Where("number = ?", userNumber).First(&user).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		c.Set("user", &user)
+		c.Next()
+	}
 }

@@ -20,14 +20,75 @@ type TokenDetails struct {
 	RefreshTokenExpiresIn *int64
 }
 
-// Constants for token configuration
 const (
-	AccessTokenDuration  = time.Minute * 15   // 15 minutes
-	RefreshTokenDuration = time.Hour * 24 * 7 // 7 days
-	MaxTokens            = 5                  // Maximum concurrent tokens per user
+	AccessTokenDuration  = time.Minute * 15
+	RefreshTokenDuration = time.Hour * 24 * 7
+	MaxTokens            = 5
 )
 
-func CreateToken(userNumber string) (*TokenDetails, error) {
+type JWTService struct{}
+
+func NewJWTService() *JWTService {
+	return &JWTService{}
+}
+
+func (s JWTService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
+	publicKey := os.Getenv("ACCESS_TOKEN_PUBLIC_KEY")
+	if publicKey == "" {
+		return nil, fmt.Errorf("missing ACCESS_TOKEN_PUBLIC_KEY environment variable")
+	}
+
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode public key: %w", err)
+	}
+
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("validate: parse key: %w", err)
+	}
+
+	parsedToken, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", t.Header["alg"])
+		}
+		return key, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("validating token: %w", err)
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, fmt.Errorf("validate: invalid token")
+	}
+
+	if err := claims.Valid(); err != nil {
+		return nil, fmt.Errorf("validate: invalid claims: %w", err)
+	}
+
+	// Validate required fields and their types
+	requiredClaims := []string{"sub", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type"}
+	for _, claim := range requiredClaims {
+		if _, ok := claims[claim]; !ok {
+			return nil, fmt.Errorf("validate: missing required claim: %s", claim)
+		}
+	}
+
+	// Validate issuer and audience
+	if iss, ok := claims["iss"].(string); !ok || iss != "opendataug.org" {
+		return nil, fmt.Errorf("validate: invalid issuer")
+	}
+
+	if aud, ok := claims["aud"].(string); !ok || aud != "opendataug.org" {
+		return nil, fmt.Errorf("validate: invalid audience")
+	}
+
+	return claims, nil
+}
+
+func (s *JWTService) CreateToken(userNumber string) (*TokenDetails, error) {
 	privateKey := os.Getenv("ACCESS_TOKEN_PRIVATE_KEY")
 	if privateKey == "" {
 		return nil, fmt.Errorf("missing ACCESS_TOKEN_PRIVATE_KEY environment variable")
@@ -92,88 +153,19 @@ func CreateToken(userNumber string) (*TokenDetails, error) {
 	return td, nil
 }
 
-func ValidateToken(token string, tokenType string) (*TokenDetails, error) {
-	publicKey := os.Getenv("ACCESS_TOKEN_PUBLIC_KEY")
-	if publicKey == "" {
-		return nil, fmt.Errorf("missing ACCESS_TOKEN_PUBLIC_KEY environment variable")
-	}
-
-	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode public key: %w", err)
-	}
-
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
-	if err != nil {
-		return nil, fmt.Errorf("validate: parse key: %w", err)
-	}
-
-	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %s", t.Header["alg"])
-		}
-		return key, nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("validating token: %w", err)
-	}
-
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok || !parsedToken.Valid {
-		return nil, fmt.Errorf("validate: invalid token")
-	}
-
-	if err := claims.Valid(); err != nil {
-		return nil, fmt.Errorf("validate: invalid claims: %w", err)
-	}
-
-	// Validate token type
-	if claimType, ok := claims["type"].(string); !ok || claimType != tokenType {
-		return nil, fmt.Errorf("validate: invalid token type")
-	}
-
-	// Validate required fields and their types
-	requiredClaims := []string{"sub", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type"}
-	for _, claim := range requiredClaims {
-		if _, ok := claims[claim]; !ok {
-			return nil, fmt.Errorf("validate: missing required claim: %s", claim)
-		}
-	}
-
-	// Validate issuer and audience
-	if iss, ok := claims["iss"].(string); !ok || iss != "opendataug.org" {
-		return nil, fmt.Errorf("validate: invalid issuer")
-	}
-
-	if aud, ok := claims["aud"].(string); !ok || aud != "opendataug.org" {
-		return nil, fmt.Errorf("validate: invalid audience")
-	}
-
-	exp, ok := claims["exp"].(float64)
-	if !ok {
-		return nil, fmt.Errorf("validate: invalid expiration claim type")
-	}
-
-	td := &TokenDetails{
-		AccessTokenUUID:      fmt.Sprint(claims["token_uuid"]),
-		UserNumber:           fmt.Sprint(claims["sub"]),
-		AccessTokenExpiresIn: new(int64),
-	}
-	*td.AccessTokenExpiresIn = int64(exp)
-
-	return td, nil
-}
-
-func RefreshToken(refreshToken string) (*TokenDetails, error) {
-	// Validate the refresh token
-	td, err := ValidateToken(refreshToken, "refresh")
+func (s *JWTService) RefreshToken(refreshToken string) (*TokenDetails, error) {
+	claims, err := s.ValidateToken(refreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 
-	// Create new tokens
-	newTokens, err := CreateToken(td.UserNumber)
+	// Validate it's a refresh token
+	if tokenType, ok := claims["type"].(string); !ok || tokenType != "refresh" {
+		return nil, fmt.Errorf("invalid token type: expected refresh token")
+	}
+
+	userNumber := fmt.Sprint(claims["sub"])
+	newTokens, err := s.CreateToken(userNumber)
 	if err != nil {
 		return nil, fmt.Errorf("creating new tokens: %w", err)
 	}

@@ -11,16 +11,19 @@ import (
 	"opendataug.org/commons"
 	"opendataug.org/database"
 	"opendataug.org/models"
+	"opendataug.org/services"
 	"opendataug.org/utils"
 )
 
 type UserController struct {
-	db *database.Database
+	db         *database.Database
+	jwtService *services.JWTService
 }
 
-func NewUserController(db *database.Database) *UserController {
+func NewUserController(db *database.Database, jwtService *services.JWTService) *UserController {
 	return &UserController{
-		db: db,
+		db:         db,
+		jwtService: jwtService,
 	}
 }
 
@@ -142,8 +145,8 @@ func (c *UserController) AuthenticateUser(email, password string) (*models.User,
 	return user, nil
 }
 
-func (c *UserController) RefreshUserSession(refreshToken string) (*commons.TokenDetails, error) {
-	return commons.RefreshToken(refreshToken)
+func (c *UserController) RefreshUserSession(refreshToken string) (*services.TokenDetails, error) {
+	return c.jwtService.RefreshToken(refreshToken)
 }
 
 func (c *UserController) InitiatePasswordReset(email string) (string, error) {
@@ -208,7 +211,7 @@ func (c *UserController) InvalidateSession(refreshToken string) error {
 		return fmt.Errorf("missing refresh token")
 	}
 
-	_, err := commons.ValidateToken(refreshToken, "refresh")
+	_, err := c.jwtService.ValidateToken(refreshToken)
 	if err != nil {
 		return fmt.Errorf("invalid refresh token: %w", err)
 	}
@@ -216,8 +219,8 @@ func (c *UserController) InvalidateSession(refreshToken string) error {
 	return nil
 }
 
-func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, *commons.TokenDetails, error) {
-	tokenDetails, err := commons.CreateToken(user.Number)
+func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, *services.TokenDetails, error) {
+	tokenDetails, err := c.jwtService.CreateToken(user.Number)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create token: %w", err)
 	}
