@@ -7,7 +7,7 @@ const Login = lazy(() => import('../pages/auth/Login'));
 const SignUp = lazy(() => import('../pages/auth/SignUp'));
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
 const SetPassword = lazy(() => import('../pages/auth/SetPassword'));
-const APIKeys = lazy(() => import('../features/index'));
+const APIKeys = lazy(() => import('../features/apiKeys'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 interface RouteConfig {

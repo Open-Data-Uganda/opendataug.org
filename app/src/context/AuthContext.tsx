@@ -1,12 +1,16 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { notifyError } from '../components/toasts';
 import { backendUrl } from '../config';
 
 interface AuthContextProps {
-  token: string | null;
+  isAuthenticated: boolean;
   userNumber: string | null;
   userRole: string | null;
+  accessToken: string | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  checkAuthStatus: () => Promise<void>;
 }
 
 interface AuthProviderProps {
@@ -16,12 +20,50 @@ interface AuthProviderProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState('');
-  const [userNumber, setUserNumber] = useState('');
-  const [userRole, setUserRole] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userNumber, setUserNumber] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkAuthStatus = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${backendUrl}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        setIsAuthenticated(false);
+        setUserNumber(null);
+        setUserRole(null);
+        setAccessToken(null);
+        return;
+      }
+
+      const data = await response.json();
+      setIsAuthenticated(true);
+      setUserNumber(data.user_number);
+      setUserRole(data.role);
+      setAccessToken(data.access_token);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setIsAuthenticated(false);
+      setUserNumber(null);
+      setUserRole(null);
+      setAccessToken(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       const response = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
         credentials: 'include',
@@ -37,40 +79,72 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
-
-      setToken(data.token);
-      setUserNumber(data.userNumber);
+      setIsAuthenticated(true);
+      setUserNumber(data.user_number);
       setUserRole(data.role);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userNumber', data.userNumber);
-      localStorage.setItem('userRole', data.role);
+      setAccessToken(data.access_token);
     } catch (error) {
+      notifyError('An error occurred');
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setToken('');
-    setUserNumber('');
-    setUserRole('');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userNumber');
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      await fetch(`${backendUrl}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } finally {
+      setIsAuthenticated(false);
+      setUserNumber(null);
+      setUserRole(null);
+      setAccessToken(null);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUserNumber = localStorage.getItem('userNumber');
-    const storedUserRole = localStorage.getItem('userRole');
+    checkAuthStatus();
 
-    if (storedToken && storedUserNumber && storedUserRole) {
-      setToken(storedToken);
-      setUserNumber(storedUserNumber);
-      setUserRole(storedUserRole);
-    }
+    const refreshInterval = setInterval(
+      () => {
+        checkAuthStatus();
+      },
+      4 * 60 * 1000
+    );
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAuthStatus();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
-  return <AuthContext.Provider value={{ token, userNumber, login, logout, userRole }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        userNumber,
+        userRole,
+        accessToken,
+        isLoading,
+        login,
+        logout,
+        checkAuthStatus
+      }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = (): AuthContextProps => {

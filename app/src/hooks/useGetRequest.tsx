@@ -1,30 +1,48 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { backendUrl } from '../config';
+import { useAuth } from '../context/AuthContext';
 
-const useGetRequest = (initialUrl: string, queryKey: string, queryOptions?: any) => {
-  const token = localStorage.getItem('token');
-  const userNumber = localStorage.getItem('userNumber');
+interface GetRequestProps {
+  url: string;
+  queryKey: string | string[];
+  params?: Record<string, any>;
+}
 
-  const { data, isLoading, isPlaceholderData, isError } = useQuery({
-    queryKey: [queryKey, queryOptions],
-    staleTime: Infinity,
+const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
+  const { userNumber, accessToken } = useAuth();
+
+  return useQuery({
+    queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
     queryFn: async () => {
-      const { data } = await axios.get(`${backendUrl}/v1/${initialUrl}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'User-Number': userNumber
-        }
-      });
+      try {
+        const response = await axios.get(`${backendUrl}/${url}`, {
+          params,
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Number': userNumber,
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
 
-      return {
-        data: data.data,
-        total: data.total ?? null
-      };
+        if (response.data.data && response.data.total !== undefined) {
+          return {
+            data: response.data.data,
+            total: response.data.total
+          };
+        }
+
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          throw new Error(error.response.data.message || 'An error occurred while fetching data.');
+        } else {
+          throw new Error('An error occurred while fetching data.');
+        }
+      }
     }
   });
-
-  return { data, isLoading, isError, isPlaceholderData };
 };
 
 export default useGetRequest;
