@@ -138,7 +138,7 @@ func (pc *ParishController) DeleteParish(c *gin.Context) {
 }
 
 func (pc *ParishController) GetParishesByDistrict(c *gin.Context) {
-	districtID := c.Param("districtId")
+	districtID := c.Param("id")
 	var parishes []models.Parish
 
 	result := pc.DB.Where("district_number = ?", districtID).Find(&parishes)
