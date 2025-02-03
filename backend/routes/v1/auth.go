@@ -1,11 +1,12 @@
 package v1
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"encoding/base64"
 
 	"github.com/badoux/checkmail"
 	"github.com/gin-gonic/gin"
@@ -195,40 +196,27 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 		return
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-
+	claims, err := h.jwtService.ValidateToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid or expired reset token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token", "err": err.Error()})
+		c.Abort()
 		return
 	}
 
-	// Verify token claims
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid reset token"})
+	userNumber, ok := claims["user_number"].(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+		c.Abort()
 		return
 	}
 
-	// Verify token type
 	tokenType, ok := claims["type"].(string)
 	if !ok || tokenType != "password_reset" {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token type"})
 		return
 	}
 
-	// Get user number from claims
-	userNumber, ok := claims["user_number"].(string)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
-		return
-	}
-
-	if err := h.userController.SetNewPassword(userNumber, payload.Password, payload.ConfirmPassword); err != nil {
+	if err := h.userController.SetNewPassword(tokenString, userNumber, payload.Password, payload.ConfirmPassword); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
@@ -298,7 +286,6 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	}
 
 	userNumber := commons.UUIDGenerator()
-	userStatus := "INACTIVE"
 
 	if err := checkmail.ValidateFormat(payload.Email); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email address"})
@@ -312,7 +299,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	}
 
 	user := models.User{
-		Number:    commons.UUIDGenerator(),
+		Number:    userNumber,
 		FirstName: payload.FirstName,
 		OtherName: payload.OtherName,
 		Email:     strings.ToLower(payload.Email),
@@ -340,14 +327,35 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	baseURL := os.Getenv("BASE_URL")
+
 	claims := jwt.MapClaims{
 		"exp":         time.Now().Add(24 * time.Hour).Unix(),
 		"type":        "password_reset",
 		"user_number": userNumber,
+		"token_uuid":  commons.UUIDGenerator(),
+		"iat":         time.Now().UTC().Unix(),
+		"nbf":         time.Now().UTC().Unix(),
+		"iss":         baseURL,
+		"aud":         baseURL,
+	}
+
+	privateKeyBytes, err := base64.StdEncoding.DecodeString(os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode private key"})
+		return
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse private key"})
+		return
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	userToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	userToken, err := token.SignedString(privateKey)
 	if err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate reset token"})
@@ -358,7 +366,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		Number:     commons.UUIDGenerator(),
 		UserNumber: userNumber,
 		Token:      userToken,
-		Status:     userStatus,
+		Status:     "ACTIVE",
 	}
 
 	if err := tx.Create(&saveUserPasswordToken).Error; err != nil {

@@ -33,7 +33,21 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup) {
 func (h *VillageHandler) createVillage(c *gin.Context) {
 	var payload models.Village
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	var parish models.Parish
+	if err := h.db.DB.First(&parish, "number = ?", payload.ParishNumber).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid parish number - parish does not exist"})
+		return
+	}
+
+	// Check if village with same name exists in the same parish
+	var existingVillage models.Village
+	if err := h.db.DB.Where("name = ? AND parish_number = ?", payload.Name, payload.ParishNumber).
+		First(&existingVillage).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Village with this name already exists in this parish"})
 		return
 	}
 
@@ -44,7 +58,7 @@ func (h *VillageHandler) createVillage(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&village).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -58,13 +72,13 @@ func (h *VillageHandler) updateVillage(c *gin.Context) {
 
 	var village models.Village
 	if err := h.db.DB.First(&village, "number = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Village not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Village not found"})
 		return
 	}
 
 	var payload models.Village
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -72,7 +86,7 @@ func (h *VillageHandler) updateVillage(c *gin.Context) {
 	village.ParishNumber = payload.ParishNumber
 
 	if err := h.db.DB.Save(&village).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -86,12 +100,12 @@ func (h *VillageHandler) deleteVillage(c *gin.Context) {
 
 	var village models.Village
 	if err := h.db.DB.First(&village, "number = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Village not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Village not found"})
 		return
 	}
 
 	if err := h.db.DB.Delete(&village).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -105,7 +119,7 @@ func (h *VillageHandler) handleAllVillages(c *gin.Context) {
 
 	var villages []models.Village
 	if err := h.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&villages).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -117,7 +131,7 @@ func (h *VillageHandler) handleGetVillage(c *gin.Context) {
 
 	var village models.Village
 	if err := h.db.DB.First(&village, "number = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Village not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Village not found"})
 		return
 	}
 

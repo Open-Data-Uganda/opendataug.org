@@ -36,10 +36,18 @@ func (dc *DistrictController) GetDistrict(c *gin.Context) {
 }
 
 func (dc *DistrictController) CreateDistrict(c *gin.Context) {
-	var district models.District
-	if err := c.ShouldBindJSON(&district); err != nil {
+	var payload models.District
+	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	district := models.District{
+		Number:       payload.Number,
+		Name:         payload.Name,
+		Size:         payload.Size,
+		TownStatus:   payload.TownStatus,
+		RegionNumber: payload.RegionNumber,
 	}
 
 	if err := dc.DB.Create(&district).Error; err != nil {

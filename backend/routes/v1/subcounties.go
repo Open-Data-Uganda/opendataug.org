@@ -38,6 +38,13 @@ func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 		return
 	}
 
+	var existingSubcounty models.SubCounty
+	if err := h.db.DB.Where("name = ? AND county_number = ?", payload.Name, payload.CountyNumber).
+		First(&existingSubcounty).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Subcounty with this name already exists in this county"})
+		return
+	}
+
 	subcounty := models.SubCounty{
 		Number:       commons.UUIDGenerator(),
 		CountyNumber: payload.CountyNumber,
@@ -49,9 +56,7 @@ func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "Subcounty created successfully",
-	})
+	c.JSON(http.StatusCreated, gin.H{"message": "Subcounty created successfully"})
 }
 
 func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
@@ -131,16 +136,27 @@ func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 
 func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	number := c.Param("number")
-	pagination := commons.GetPaginationParams(c)
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Number is required"})
+		return
+	}
+
+	number = commons.Sanitize(number)
 
 	var parishes []models.Parish
 	if err := h.db.DB.Where("sub_county_number = ?", number).
-		Offset((pagination.Page - 1) * pagination.Limit).
-		Limit(pagination.Limit).
 		Find(&parishes).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, parishes)
+	var response []models.ParishResponse
+	for _, parish := range parishes {
+		response = append(response, models.ParishResponse{
+			Name:   parish.Name,
+			Number: parish.Number,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }

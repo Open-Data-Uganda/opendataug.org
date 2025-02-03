@@ -27,6 +27,7 @@ func (h *ParishHandler) RegisterRoutes(r *gin.RouterGroup) {
 		parishes.GET("/:number", h.handleParish)
 		parishes.PUT("/:number", h.handleUpdateParish)
 		parishes.DELETE("/:number", h.handleDeleteParish)
+		parishes.GET("/:number/villages", h.handleParishVillages)
 	}
 }
 
@@ -34,6 +35,13 @@ func (h *ParishHandler) createParish(c *gin.Context) {
 	var payload models.Parish
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var existingParish models.Parish
+	if err := h.db.DB.Where("name = ? AND sub_county_number = ?", payload.Name, payload.SubCountyNumber).
+		First(&existingParish).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Parish with this name already exists in this subcounty"})
 		return
 	}
 
@@ -121,4 +129,29 @@ func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Parish deleted successfully",
 	})
+}
+
+func (h *ParishHandler) handleParishVillages(c *gin.Context) {
+	parishNumber := c.Param("number")
+	parishNumber = commons.Sanitize(parishNumber)
+
+	if parishNumber == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parish number"})
+		return
+	}
+
+	var parish models.Parish
+	if err := h.db.DB.Preload("Villages").Where("number = ?", parishNumber).First(&parish).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Parish not found"})
+		return
+	}
+
+	var villages []models.VillageResponse
+	for _, village := range parish.Villages {
+		villages = append(villages, models.VillageResponse{
+			Name: village.Name,
+		})
+	}
+
+	c.JSON(http.StatusOK, villages)
 }
