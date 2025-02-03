@@ -36,7 +36,7 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 
 	var regions []models.Region
 	if err := h.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&regions).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
 		return
 	}
 
@@ -71,13 +71,13 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 func (h *RegionHandler) createRegion(c *gin.Context) {
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	var existingRegion models.Region
 	if err := h.db.DB.Where("name = ?", payload.Name).First(&existingRegion).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Region with this name already exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region with this name already exists"})
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -101,27 +101,26 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
 		return
 	}
 
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
-	// Check if another region already has this name
 	var existingRegion models.Region
 	if err := h.db.DB.Where("name = ? AND number != ?", payload.Name, number).First(&existingRegion).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Region with this name already exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region with this name already exists"})
 		return
 	}
 
 	region.Name = payload.Name
 
 	if err := h.db.DB.Save(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -132,15 +131,21 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	number := c.Param("number")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region number is required"})
+		return
+	}
+
+	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
 		return
 	}
 
 	if err := h.db.DB.Delete(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -151,12 +156,32 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 
 func (h *RegionHandler) getDistricts(c *gin.Context) {
 	number := c.Param("number")
-
-	var region models.Region
-	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Region not found"})
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region number is required"})
 		return
 	}
 
-	c.JSON(http.StatusOK, region.Districts)
+	var region models.Region
+	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", number).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
+		return
+	}
+
+	var districts []models.DistrictSummary
+	for _, district := range region.Districts {
+		districts = append(districts, models.DistrictSummary{
+			Number:     district.Number,
+			Name:       district.Name,
+			Size:       int(district.Size),
+			TownStatus: district.TownStatus,
+		})
+	}
+
+	response := models.RegionWithDistricts{
+		Number:    region.Number,
+		Name:      region.Name,
+		Districts: districts,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

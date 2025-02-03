@@ -47,3 +47,8 @@ func GetUserFromHeader(c *gin.Context, db *gorm.DB) (*models.User, error) {
 
 	return &user, nil
 }
+
+func Sanitize(value string) string {
+	value = strings.TrimSpace(value)
+	return value
+}

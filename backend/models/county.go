@@ -12,3 +12,10 @@ type County struct {
 	SubCounties    []SubCounty `gorm:"foreignKey:CountyNumber;references:Number;constraint: OnUpdate:CASCADE, OnDelete:RESTRICT;" json:"sub_counties,omitempty"`
 	gorm.Model
 }
+
+type CountyResponse struct {
+	Number         string `json:"number"`
+	Name           string `json:"name"`
+	DistrictNumber string `json:"district_number"`
+	DistrictName   string `json:"district_name"`
+}

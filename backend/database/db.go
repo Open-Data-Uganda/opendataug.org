@@ -61,11 +61,16 @@ func NewDatabase(config *Config) (*Database, error) {
 	}
 
 	err = db.AutoMigrate(
-		&models.District{},
 		&models.User{},
 		&models.APIKey{},
 		&models.UserPassword{},
 		&models.PasswordReset{},
+		&models.Region{},
+		&models.District{},
+		&models.County{},
+		&models.SubCounty{},
+		&models.Parish{},
+		&models.Village{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)

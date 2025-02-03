@@ -169,14 +169,22 @@ func (c *UserController) InitiatePasswordReset(email string) (string, error) {
 	return resetToken, nil
 }
 
-func (c *UserController) SetNewPassword(token, newPassword, confirmPassword string) error {
+func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmPassword string) error {
 	if newPassword != confirmPassword {
 		return fmt.Errorf("passwords do not match")
 	}
 
 	reset, err := c.FindPasswordResetByToken(token)
 	if err != nil {
-		return fmt.Errorf("invalid or expired reset token")
+		return fmt.Errorf("invalid or expired reset token: %s", token)
+	}
+
+	if userNumber != reset.UserNumber {
+		return fmt.Errorf("invalid user number")
+	}
+
+	if reset.Status != "ACTIVE" {
+		return fmt.Errorf("reset token is not active")
 	}
 
 	hashedPassword, err := commons.HashPassword(newPassword)

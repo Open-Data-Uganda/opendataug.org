@@ -11,3 +11,7 @@ type Village struct {
 	Parish       Parish `gorm:"foreignKey:ParishNumber;references:Number;constraint: OnUpdate:CASCADE, OnDelete:RESTRICT;" json:"parish_details,omitempty"`
 	gorm.Model
 }
+
+type VillageResponse struct {
+	Name string `json:"name"`
+}

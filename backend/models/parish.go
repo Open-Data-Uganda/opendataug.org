@@ -12,3 +12,8 @@ type Parish struct {
 	Villages        []Village `gorm:"foreignKey:ParishNumber;references:Number;constraint: OnUpdate:CASCADE, OnDelete:RESTRICT;" json:"villages,omitempty"`
 	gorm.Model
 }
+
+type ParishResponse struct {
+	Name   string `json:"name"`
+	Number string `json:"number"`
+}

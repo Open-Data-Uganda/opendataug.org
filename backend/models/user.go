@@ -101,7 +101,7 @@ type (
 	PasswordReset struct {
 		gorm.Model
 		Number     string `gorm:"primaryKey;type:varchar(36);not null;unique" json:"number"`
-		Token      string `json:"token" gorm:"size:80;not null"`
+		Token      string `json:"token" gorm:"not null"`
 		Status     string `json:"status" gorm:"size:10;not null"`
 		UserNumber string `json:"user_number" gorm:"size:36;index;not null"`
 		User       User   `gorm:"foreignKey:UserNumber;references:Number;constraint: OnUpdate:CASCADE, OnDelete:RESTRICT;"`
