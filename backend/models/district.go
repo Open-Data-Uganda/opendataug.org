@@ -7,7 +7,7 @@ import (
 type District struct {
 	Number       string   `gorm:"primaryKey;type:varchar(36);not null;unique" json:"number"`
 	Name         string   `json:"name"`
-	Size         uint32   `json:"size"`
+	Size         float32  `json:"size"`
 	TownStatus   bool     `json:"townstatus"`
 	Counties     []County `gorm:"foreignKey:DistrictNumber;references:Number;constraint: OnUpdate:CASCADE, OnDelete:RESTRICT;" json:"counties,omitempty"`
 	RegionNumber string   `gorm:"type:varchar(36)" json:"region_number"`
@@ -18,7 +18,7 @@ type District struct {
 type DistrictResponse struct {
 	Number       string        `json:"number"`
 	Name         string        `json:"name"`
-	Size         int           `json:"size"`
+	Size         float32       `json:"size"`
 	TownStatus   bool          `json:"town_status"`
 	RegionNumber string        `json:"region_number"`
 	Region       RegionSummary `json:"region"`
@@ -29,10 +29,10 @@ type RegionSummary struct {
 }
 
 type DistrictSummary struct {
-	Number     string `json:"number"`
-	Name       string `json:"name"`
-	Size       int    `json:"size"`
-	TownStatus bool   `json:"town_status"`
+	Number     string  `json:"number"`
+	Name       string  `json:"name"`
+	Size       float32 `json:"size"`
+	TownStatus bool    `json:"town_status"`
 }
 
 type RegionWithDistricts struct {

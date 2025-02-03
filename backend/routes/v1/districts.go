@@ -21,7 +21,7 @@ type RegionResponse struct {
 type DistrictResponse struct {
 	Number       string         `json:"number"`
 	Name         string         `json:"name"`
-	Size         uint32         `json:"size"`
+	Size         float32        `json:"size"`
 	TownStatus   bool           `json:"town_status"`
 	RegionNumber string         `json:"region_number"`
 	Region       RegionResponse `json:"region"`
