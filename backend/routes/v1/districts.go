@@ -169,7 +169,6 @@ func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
 		c.Error(customerrors.NewBadRequestError("District number is required"))
 		return
 	}
-
 	districtNumber = commons.Sanitize(districtNumber)
 
 	var district models.District
