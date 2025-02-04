@@ -44,7 +44,6 @@ func SetupRouter(db *database.Database) *gin.Engine {
 
 		// Protected routes
 		protected := v1Group.Group("")
-		protected.Use(v1.NewAuthHandler(db).TokenAuthMiddleware())
 		{
 			regionHandler := v1.NewRegionHandler(db)
 			regionHandler.RegisterRoutes(protected, authHandler)
@@ -65,7 +64,7 @@ func SetupRouter(db *database.Database) *gin.Engine {
 			villageHandler.RegisterRoutes(protected, authHandler)
 
 			apiKeyHandler := v1.NewAPIKeyHandler(db)
-			apiKeyHandler.RegisterRoutes(protected)
+			apiKeyHandler.RegisterRoutes(protected, authHandler)
 
 		}
 	}

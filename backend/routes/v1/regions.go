@@ -30,9 +30,13 @@ func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 			regions.GET("/:id/districts", h.getDistricts)
 		}
 
-		regions.POST("", h.createRegion)
-		regions.PUT("/:id", h.updateRegion)
-		regions.DELETE("/:id", h.deleteRegion)
+		private := regions.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			private.POST("", h.createRegion)
+			private.PUT("/:id", h.updateRegion)
+			private.DELETE("/:id", h.deleteRegion)
+		}
 	}
 }
 

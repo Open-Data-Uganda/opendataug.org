@@ -28,9 +28,13 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHan
 			villages.GET("/:id", h.handleGetVillage)
 		}
 
-		villages.POST("", h.createVillage)
-		villages.PUT("/:id", h.updateVillage)
-		villages.DELETE("/:id", h.deleteVillage)
+		private := villages.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			villages.POST("", h.createVillage)
+			villages.PUT("/:id", h.updateVillage)
+			villages.DELETE("/:id", h.deleteVillage)
+		}
 	}
 }
 

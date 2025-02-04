@@ -32,9 +32,14 @@ func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 			counties.GET("/district/:id", h.getCountiesByDistrict)
 		}
 
-		counties.POST("", h.createCounty)
-		counties.PUT("/:id", h.updateCounty)
-		counties.DELETE("/:id", h.deleteCounty)
+		private := counties.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			counties.POST("", h.createCounty)
+			counties.PUT("/:id", h.updateCounty)
+			counties.DELETE("/:id", h.deleteCounty)
+		}
+
 	}
 }
 
