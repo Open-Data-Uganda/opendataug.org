@@ -185,12 +185,12 @@ func (h *RegionHandler) getDistricts(c *gin.Context) {
 	var districts []models.DistrictResponse
 	for _, district := range region.Districts {
 		districts = append(districts, models.DistrictResponse{
-			ID:           district.Number,
-			Name:         district.Name,
-			Size:         district.Size,
-			TownStatus:   district.TownStatus,
-			RegionNumber: district.RegionNumber,
-			RegionName:   district.Region.Name,
+			ID:         district.Number,
+			Name:       district.Name,
+			Size:       district.Size,
+			TownStatus: district.TownStatus,
+			RegionID:   district.RegionNumber,
+			RegionName: district.Region.Name,
 		})
 	}
 

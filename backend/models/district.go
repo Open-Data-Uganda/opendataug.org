@@ -16,10 +16,10 @@ type District struct {
 }
 
 type DistrictResponse struct {
-	ID           string  `json:"id"`
-	Name         string  `json:"name"`
-	Size         float32 `json:"size"`
-	TownStatus   bool    `json:"town_status"`
-	RegionNumber string  `json:"region_number"`
-	RegionName   string  `json:"region_name"`
+	ID         string  `json:"id"`
+	Name       string  `json:"name"`
+	Size       float32 `json:"size"`
+	TownStatus bool    `json:"town_status"`
+	RegionID   string  `json:"region_id"`
+	RegionName string  `json:"region_name"`
 }

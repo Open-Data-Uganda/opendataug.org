@@ -14,8 +14,8 @@ type County struct {
 }
 
 type CountyResponse struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	DistrictNumber string `json:"district_number"`
-	DistrictName   string `json:"district_name"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	DistrictID   string `json:"district_id"`
+	DistrictName string `json:"district_name"`
 }
