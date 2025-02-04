@@ -149,9 +149,7 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Region deleted successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Region deleted successfully"})
 }
 
 func (h *RegionHandler) getDistricts(c *gin.Context) {
@@ -167,21 +165,17 @@ func (h *RegionHandler) getDistricts(c *gin.Context) {
 		return
 	}
 
-	var districts []models.DistrictSummary
+	var districts []models.DistrictResponse
 	for _, district := range region.Districts {
-		districts = append(districts, models.DistrictSummary{
-			Number:     district.Number,
-			Name:       district.Name,
-			Size:       district.Size,
-			TownStatus: district.TownStatus,
+		districts = append(districts, models.DistrictResponse{
+			Number:       district.Number,
+			Name:         district.Name,
+			Size:         district.Size,
+			TownStatus:   district.TownStatus,
+			RegionNumber: district.RegionNumber,
+			RegionName:   district.Region.Name,
 		})
 	}
 
-	response := models.RegionWithDistricts{
-		Number:    region.Number,
-		Name:      region.Name,
-		Districts: districts,
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, districts)
 }

@@ -13,20 +13,6 @@ type DistrictHandler struct {
 	db *database.Database
 }
 
-type RegionResponse struct {
-	Number string `json:"number"`
-	Name   string `json:"name"`
-}
-
-type DistrictResponse struct {
-	Number       string         `json:"number"`
-	Name         string         `json:"name"`
-	Size         float32        `json:"size"`
-	TownStatus   bool           `json:"town_status"`
-	RegionNumber string         `json:"region_number"`
-	Region       RegionResponse `json:"region"`
-}
-
 func NewDistrictHandler(db *database.Database) *DistrictHandler {
 	return &DistrictHandler{
 		db: db,
@@ -89,18 +75,14 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 		return
 	}
 
-	response := make([]DistrictResponse, len(districts))
+	response := make([]models.DistrictResponse, len(districts))
 	for i, district := range districts {
-		response[i] = DistrictResponse{
+		response[i] = models.DistrictResponse{
 			Number:       district.Number,
 			Name:         district.Name,
 			Size:         district.Size,
 			TownStatus:   district.TownStatus,
 			RegionNumber: district.RegionNumber,
-			Region: RegionResponse{
-				Number: district.Region.Number,
-				Name:   district.Region.Name,
-			},
 		}
 	}
 
@@ -118,16 +100,13 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 		return
 	}
 
-	response := DistrictResponse{
+	response := models.DistrictResponse{
 		Number:       district.Number,
 		Name:         district.Name,
 		Size:         district.Size,
 		TownStatus:   district.TownStatus,
 		RegionNumber: district.RegionNumber,
-		Region: RegionResponse{
-			Number: district.Region.Number,
-			Name:   district.Region.Name,
-		},
+		RegionName:   district.Region.Name,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -144,15 +123,13 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 		return
 	}
 
-	response := DistrictResponse{
+	response := models.DistrictResponse{
 		Number:       district.Number,
 		Name:         district.Name,
 		Size:         district.Size,
 		TownStatus:   district.TownStatus,
 		RegionNumber: district.RegionNumber,
-		Region: RegionResponse{
-			Name: district.Region.Name,
-		},
+		RegionName:   district.Region.Name,
 	}
 
 	c.JSON(http.StatusOK, response)
