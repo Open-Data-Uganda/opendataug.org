@@ -3,10 +3,13 @@ package v1
 import (
 	"net/http"
 
+	"errors"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"opendataug.org/commons"
 	"opendataug.org/database"
-	"opendataug.org/errors"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -40,7 +43,7 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
 	var payload models.District
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.Error(errors.NewValidationError("Invalid request payload", err.Error()))
+		c.Error(customerrors.NewValidationError("Invalid request payload", err.Error()))
 		return
 	}
 
@@ -54,12 +57,12 @@ func (h *DistrictHandler) createDistrict(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", payload.RegionNumber).Error; err != nil {
-		c.Error(errors.NewValidationError("Invalid region number", nil))
+		c.Error(customerrors.NewValidationError("Invalid region number", nil))
 		return
 	}
 
 	if err := h.db.DB.Create(&district).Error; err != nil {
-		c.Error(errors.NewDatabaseError("Failed to create district"))
+		c.Error(customerrors.NewDatabaseError("Failed to create district"))
 		return
 	}
 
@@ -97,7 +100,7 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	districtNumber := c.Param("id")
 	if districtNumber == "" {
-		c.Error(errors.NewBadRequestError("District id is required"))
+		c.Error(customerrors.NewBadRequestError("District id is required"))
 		return
 	}
 	districtNumber = commons.Sanitize(districtNumber)
@@ -106,7 +109,11 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	if err := h.db.DB.Preload("Region").
 		Where("number = ?", districtNumber).
 		First(&district).Error; err != nil {
-		c.Error(errors.NewNotFoundError("District not found"))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.Error(customerrors.NewNotFoundError("District not found"))
+			return
+		}
+		c.Error(customerrors.NewDatabaseError("Failed to fetch district"))
 		return
 	}
 
@@ -125,7 +132,7 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	districtName := c.Param("name")
 	if districtName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "District name is required"})
+		c.Error(customerrors.NewBadRequestError("District name is required"))
 		return
 	}
 	districtName = commons.Sanitize(districtName)
@@ -134,7 +141,7 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	if err := h.db.DB.Preload("Region").
 		Where("name = ?", districtName).
 		First(&district).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "District not found"})
+		c.Error(customerrors.NewNotFoundError("District not found"))
 		return
 	}
 
@@ -153,7 +160,7 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
 	districtNumber := c.Param("id")
 	if districtNumber == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "District number is required"})
+		c.Error(customerrors.NewBadRequestError("District number is required"))
 		return
 	}
 
@@ -161,12 +168,12 @@ func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
 
 	var district models.District
 	if err := h.db.DB.Where("number = ?", districtNumber).First(&district).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "District not found"})
+		c.Error(customerrors.NewNotFoundError("District not found"))
 		return
 	}
 
 	if err := h.db.DB.Delete(&district).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.Error(customerrors.NewDatabaseError("Failed to delete district"))
 		return
 	}
 
