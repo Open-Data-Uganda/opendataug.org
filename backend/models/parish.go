@@ -14,6 +14,6 @@ type Parish struct {
 }
 
 type ParishResponse struct {
-	Name   string `json:"name"`
-	Number string `json:"number"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

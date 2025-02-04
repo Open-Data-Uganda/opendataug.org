@@ -14,6 +14,6 @@ type SubCounty struct {
 }
 
 type SubCountyResponse struct {
-	Name   string `json:"name"`
-	Number string `json:"number"`
+	Name string `json:"name"`
+	ID   string `json:"id"`
 }

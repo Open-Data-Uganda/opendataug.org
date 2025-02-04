@@ -123,16 +123,10 @@ func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 		return
 	}
 
-	type APIKeyResponse struct {
-		Number    string    `json:"number"`
-		Name      string    `json:"name"`
-		CreatedAt time.Time `json:"created_at"`
-	}
-
-	response := make([]APIKeyResponse, len(keys))
+	response := make([]models.APIKeyResponse, len(keys))
 	for i, key := range keys {
-		response[i] = APIKeyResponse{
-			Number:    key.Number,
+		response[i] = models.APIKeyResponse{
+			ID:        key.Number,
 			Name:      key.Name,
 			CreatedAt: key.CreatedAt,
 		}

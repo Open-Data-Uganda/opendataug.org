@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
 	"opendataug.org/database"
+	"opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -27,19 +28,19 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			districts.GET("", h.handleAllDistricts)
-			districts.GET("/:number", h.handleDistrictByNumber)
+			districts.GET("/:id", h.handleDistrictByNumber)
 			districts.GET("/name/:name", h.handleDistrictByName)
 		}
 
 		districts.POST("", h.createDistrict)
-		districts.DELETE("/:number", h.deleteDistrict)
+		districts.DELETE("/:id", h.deleteDistrict)
 	}
 }
 
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
 	var payload models.District
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.Error(errors.NewValidationError("Invalid request payload", err.Error()))
 		return
 	}
 
@@ -53,14 +54,12 @@ func (h *DistrictHandler) createDistrict(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", payload.RegionNumber).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid region number",
-		})
+		c.Error(errors.NewValidationError("Invalid region number", nil))
 		return
 	}
 
 	if err := h.db.DB.Create(&district).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.Error(errors.NewDatabaseError("Failed to create district"))
 		return
 	}
 
@@ -84,7 +83,7 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 	response := make([]models.DistrictResponse, len(districts))
 	for i, district := range districts {
 		response[i] = models.DistrictResponse{
-			Number:       district.Number,
+			ID:           district.Number,
 			Name:         district.Name,
 			Size:         district.Size,
 			TownStatus:   district.TownStatus,
@@ -96,18 +95,23 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 }
 
 func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
-	districtNumber := c.Param("number")
+	districtNumber := c.Param("id")
+	if districtNumber == "" {
+		c.Error(errors.NewBadRequestError("District id is required"))
+		return
+	}
+	districtNumber = commons.Sanitize(districtNumber)
 
 	var district models.District
 	if err := h.db.DB.Preload("Region").
 		Where("number = ?", districtNumber).
 		First(&district).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "District not found"})
+		c.Error(errors.NewNotFoundError("District not found"))
 		return
 	}
 
 	response := models.DistrictResponse{
-		Number:       district.Number,
+		ID:           district.Number,
 		Name:         district.Name,
 		Size:         district.Size,
 		TownStatus:   district.TownStatus,
@@ -120,6 +124,11 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 
 func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	districtName := c.Param("name")
+	if districtName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "District name is required"})
+		return
+	}
+	districtName = commons.Sanitize(districtName)
 
 	var district models.District
 	if err := h.db.DB.Preload("Region").
@@ -130,7 +139,7 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	}
 
 	response := models.DistrictResponse{
-		Number:       district.Number,
+		ID:           district.Number,
 		Name:         district.Name,
 		Size:         district.Size,
 		TownStatus:   district.TownStatus,
@@ -142,11 +151,13 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 }
 
 func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
-	districtNumber := c.Param("number")
+	districtNumber := c.Param("id")
 	if districtNumber == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "District number is required"})
 		return
 	}
+
+	districtNumber = commons.Sanitize(districtNumber)
 
 	var district models.District
 	if err := h.db.DB.Where("number = ?", districtNumber).First(&district).Error; err != nil {

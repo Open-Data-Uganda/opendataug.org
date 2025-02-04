@@ -27,12 +27,12 @@ func (h *ParishHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			parishes.GET("", h.handleAllParishes)
-			parishes.GET("/:number", h.handleParish)
-			parishes.GET("/:number/villages", h.handleParishVillages)
+			parishes.GET("/:id", h.handleParish)
+			parishes.GET("/:id/villages", h.handleParishVillages)
 		}
 		parishes.POST("", h.createParish)
-		parishes.PUT("/:number", h.handleUpdateParish)
-		parishes.DELETE("/:number", h.handleDeleteParish)
+		parishes.PUT("/:id", h.handleUpdateParish)
+		parishes.DELETE("/:id", h.handleDeleteParish)
 	}
 }
 
@@ -79,7 +79,13 @@ func (h *ParishHandler) handleAllParishes(c *gin.Context) {
 }
 
 func (h *ParishHandler) handleParish(c *gin.Context) {
-	parishNumber := c.Param("number")
+	parishNumber := c.Param("id")
+
+	if parishNumber == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parish number"})
+		return
+	}
+	parishNumber = commons.Sanitize(parishNumber)
 
 	var parish models.Parish
 	if err := h.db.DB.Where("number = ?", parishNumber).First(&parish).Error; err != nil {
@@ -87,11 +93,16 @@ func (h *ParishHandler) handleParish(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, parish)
+	response := models.ParishResponse{
+		Name: parish.Name,
+		ID:   parish.Number,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
-	parishNumber := c.Param("number")
+	parishNumber := c.Param("id")
 
 	var payload models.Parish
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -118,7 +129,7 @@ func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
 }
 
 func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
-	parishNumber := c.Param("number")
+	parishNumber := c.Param("id")
 
 	var parish models.District
 	if err := h.db.DB.Where("number = ?", parishNumber).First(&parish).Error; err != nil {
@@ -137,7 +148,7 @@ func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
 }
 
 func (h *ParishHandler) handleParishVillages(c *gin.Context) {
-	parishNumber := c.Param("number")
+	parishNumber := c.Param("id")
 	parishNumber = commons.Sanitize(parishNumber)
 
 	if parishNumber == "" {
@@ -155,6 +166,7 @@ func (h *ParishHandler) handleParishVillages(c *gin.Context) {
 	for _, village := range parish.Villages {
 		villages = append(villages, models.VillageResponse{
 			Name: village.Name,
+			ID:   village.Number,
 		})
 	}
 
