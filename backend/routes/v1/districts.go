@@ -19,13 +19,19 @@ func NewDistrictHandler(db *database.Database) *DistrictHandler {
 	}
 }
 
-func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup) {
+func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	districts := r.Group("/districts")
 	{
-		districts.GET("", h.handleAllDistricts)
+
+		apiProtected := districts.Group("")
+		apiProtected.Use(authHandler.APIAuthMiddleware())
+		{
+			districts.GET("", h.handleAllDistricts)
+			districts.GET("/:number", h.handleDistrictByNumber)
+			districts.GET("/name/:name", h.handleDistrictByName)
+		}
+
 		districts.POST("", h.createDistrict)
-		districts.GET("/:number", h.handleDistrictByNumber)
-		districts.GET("/name/:name", h.handleDistrictByName)
 		districts.DELETE("/:number", h.deleteDistrict)
 	}
 }

@@ -19,16 +19,22 @@ func NewCountyHandler(db *database.Database) *CountyHandler {
 	}
 }
 
-func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup) {
+func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	counties := r.Group("/counties")
 	{
-		counties.GET("", h.handleAllCounties)
+
+		apiProtected := counties.Group("/")
+		apiProtected.Use(authHandler.APIAuthMiddleware())
+		{
+			counties.GET("", h.handleAllCounties)
+			counties.GET("/:number", h.handleGetCounty)
+			counties.GET("/:number/subcounties", h.getSubCounties)
+			counties.GET("/district/:number", h.getCountiesByDistrict)
+		}
+
 		counties.POST("", h.createCounty)
-		counties.GET("/:number", h.handleGetCounty)
 		counties.PUT("/:number", h.updateCounty)
 		counties.DELETE("/:number", h.deleteCounty)
-		counties.GET("/:number/subcounties", h.getSubCounties)
-		counties.GET("/district/:number", h.getCountiesByDistrict)
 	}
 }
 

@@ -43,22 +43,22 @@ func SetupRouter(db *database.Database) *gin.Engine {
 		protected.Use(v1.NewAuthHandler(db).TokenAuthMiddleware())
 		{
 			regionHandler := v1.NewRegionHandler(db)
-			regionHandler.RegisterRoutes(protected)
+			regionHandler.RegisterRoutes(protected, authHandler)
 
 			districtHandler := v1.NewDistrictHandler(db)
-			districtHandler.RegisterRoutes(protected)
+			districtHandler.RegisterRoutes(protected, authHandler)
 
 			countyHandler := v1.NewCountyHandler(db)
-			countyHandler.RegisterRoutes(protected)
+			countyHandler.RegisterRoutes(protected, authHandler)
 
 			subCountyHandler := v1.NewSubcountyHandler(db)
-			subCountyHandler.RegisterRoutes(protected)
+			subCountyHandler.RegisterRoutes(protected, authHandler)
 
 			parishHandler := v1.NewParishHandler(db)
-			parishHandler.RegisterRoutes(protected)
+			parishHandler.RegisterRoutes(protected, authHandler)
 
 			villageHandler := v1.NewVillageHandler(db)
-			villageHandler.RegisterRoutes(protected)
+			villageHandler.RegisterRoutes(protected, authHandler)
 
 			apiKeyHandler := v1.NewAPIKeyHandler(db)
 			apiKeyHandler.RegisterRoutes(protected)
