@@ -31,9 +31,13 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 			subcounties.GET("/:id/parishes", h.handleParishes)
 		}
 
-		subcounties.POST("", h.createSubcounty)
-		subcounties.PUT("/:id", h.updateSubCounty)
-		subcounties.DELETE("/:id", h.deleteSubCounty)
+		private := subcounties.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			subcounties.POST("", h.createSubcounty)
+			subcounties.PUT("/:id", h.updateSubCounty)
+			subcounties.DELETE("/:id", h.deleteSubCounty)
+		}
 	}
 }
 

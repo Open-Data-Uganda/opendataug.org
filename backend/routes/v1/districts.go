@@ -35,8 +35,13 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 			districts.GET("/name/:name", h.handleDistrictByName)
 		}
 
-		districts.POST("", h.createDistrict)
-		districts.DELETE("/:id", h.deleteDistrict)
+		private := districts.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			districts.POST("", h.createDistrict)
+			districts.DELETE("/:id", h.deleteDistrict)
+		}
+
 	}
 }
 

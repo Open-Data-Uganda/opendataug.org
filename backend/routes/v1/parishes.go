@@ -33,9 +33,14 @@ func (h *ParishHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 			parishes.GET("/:id", h.handleParish)
 			parishes.GET("/:id/villages", h.handleParishVillages)
 		}
-		parishes.POST("", h.createParish)
-		parishes.PUT("/:id", h.handleUpdateParish)
-		parishes.DELETE("/:id", h.handleDeleteParish)
+
+		private := parishes.Group("")
+		private.Use(authHandler.TokenAuthMiddleware())
+		{
+			parishes.POST("", h.createParish)
+			parishes.PUT("/:id", h.handleUpdateParish)
+			parishes.DELETE("/:id", h.handleDeleteParish)
+		}
 	}
 }
 

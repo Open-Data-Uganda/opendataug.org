@@ -30,8 +30,9 @@ func NewAPIKeyHandler(db *database.Database) *APIKeyHandler {
 	}
 }
 
-func (h *APIKeyHandler) RegisterRoutes(r *gin.RouterGroup) {
+func (h *APIKeyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	keys := r.Group("/api-keys")
+	keys.Use(authHandler.TokenAuthMiddleware())
 	{
 		keys.GET("", h.listAPIKeys)
 		keys.POST("", h.createAPIKey)
