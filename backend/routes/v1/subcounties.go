@@ -19,12 +19,18 @@ func NewSubcountyHandler(db *database.Database) *SubcountyHandle {
 	}
 }
 
-func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup) {
+func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	subcounties := r.Group("/subcounties")
 	{
-		subcounties.GET("", h.handleAllSubCounties)
-		subcounties.GET("/:number", h.handleGetSubCounty)
-		subcounties.GET("/:number/parishes", h.handleParishes)
+
+		apiProtected := subcounties.Group("")
+		apiProtected.Use(authHandler.APIAuthMiddleware())
+		{
+			subcounties.GET("", h.handleAllSubCounties)
+			subcounties.GET("/:number", h.handleGetSubCounty)
+			subcounties.GET("/:number/parishes", h.handleParishes)
+		}
+
 		subcounties.POST("", h.createSubcounty)
 		subcounties.PUT("/:number", h.updateSubCounty)
 		subcounties.DELETE("/:number", h.deleteSubCounty)

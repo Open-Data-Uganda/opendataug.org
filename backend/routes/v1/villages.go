@@ -19,11 +19,17 @@ func NewVillageHandler(db *database.Database) *VillageHandler {
 	}
 }
 
-func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup) {
+func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	villages := r.Group("/villages")
 	{
-		villages.GET("", h.handleAllVillages)
-		villages.GET("/:number", h.handleGetVillage)
+
+		apiProtected := villages.Group("")
+		apiProtected.Use(authHandler.APIAuthMiddleware())
+		{
+			villages.GET("", h.handleAllVillages)
+			villages.GET("/:number", h.handleGetVillage)
+		}
+
 		villages.POST("", h.createVillage)
 		villages.PUT("/:number", h.updateVillage)
 		villages.DELETE("/:number", h.deleteVillage)

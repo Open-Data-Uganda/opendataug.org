@@ -19,15 +19,20 @@ func NewRegionHandler(db *database.Database) *RegionHandler {
 	}
 }
 
-func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup) {
+func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	regions := r.Group("/regions")
 	{
-		regions.GET("", h.handleAllRegions)
-		regions.GET("/:number", h.handleGetRegion)
+		apiProtected := regions.Group("")
+		apiProtected.Use(authHandler.APIAuthMiddleware())
+		{
+			apiProtected.GET("", h.handleAllRegions)
+			apiProtected.GET("/:number", h.handleGetRegion)
+			regions.GET("/:number/districts", h.getDistricts)
+		}
+
 		regions.POST("", h.createRegion)
 		regions.PUT("/:number", h.updateRegion)
 		regions.DELETE("/:number", h.deleteRegion)
-		regions.GET("/:number/districts", h.getDistricts)
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/badoux/checkmail"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 	"opendataug.org/commons"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
@@ -428,6 +429,48 @@ func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		c.Set("user", &user)
+		c.Next()
+	}
+}
+
+func (h *AuthHandler) APIAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.Request.Header.Get("x-api-key")
+		if apiKey == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "No API Key provided"})
+			c.Abort()
+			return
+		}
+
+		var apiKeyModel models.APIKey
+		if err := h.db.DB.Where("key = ? AND is_active = ?", apiKey, true).First(&apiKeyModel).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid API key"})
+			c.Abort()
+			return
+		}
+
+		if apiKeyModel.ExpiresAt != nil && apiKeyModel.ExpiresAt.Before(time.Now()) {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "API key has expired"})
+			c.Abort()
+			return
+		}
+
+		var user models.User
+		if err := h.db.DB.Where("number = ?", apiKeyModel.UserNumber).First(&user).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found"})
+			c.Abort()
+			return
+		}
+
+		updates := map[string]interface{}{
+			"last_used_at": time.Now(),
+			"usage_count":  gorm.Expr("usage_count + ?", 1),
+		}
+
+		h.db.DB.Model(&apiKeyModel).Updates(updates)
+
+		c.Set("api_key", &apiKeyModel)
 		c.Set("user", &user)
 		c.Next()
 	}
