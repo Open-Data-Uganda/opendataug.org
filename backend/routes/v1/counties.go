@@ -27,20 +27,20 @@ func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			counties.GET("", h.handleAllCounties)
-			counties.GET("/:number", h.handleGetCounty)
-			counties.GET("/:number/subcounties", h.getSubCounties)
-			counties.GET("/district/:number", h.getCountiesByDistrict)
+			counties.GET("/:id", h.handleGetCounty)
+			counties.GET("/:id/subcounties", h.getSubCounties)
+			counties.GET("/district/:id", h.getCountiesByDistrict)
 		}
 
 		counties.POST("", h.createCounty)
-		counties.PUT("/:number", h.updateCounty)
-		counties.DELETE("/:number", h.deleteCounty)
+		counties.PUT("/:id", h.updateCounty)
+		counties.DELETE("/:id", h.deleteCounty)
 	}
 }
 
 func (h *CountyHandler) toCountyResponse(county models.County) models.CountyResponse {
 	return models.CountyResponse{
-		Number:         county.Number,
+		ID:             county.Number,
 		Name:           county.Name,
 		DistrictNumber: county.DistrictNumber,
 		DistrictName:   county.District.Name,
@@ -52,7 +52,7 @@ func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 
 	var counties []models.County
 	if err := h.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Preload("District").Limit(pagination.Limit).Find(&counties).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -67,13 +67,13 @@ func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 func (h *CountyHandler) createCounty(c *gin.Context) {
 	var payload models.County
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	var existingCounty models.County
 	if err := h.db.DB.Where("name = ? AND district_number = ?", payload.Name, payload.DistrictNumber).First(&existingCounty).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "County with this name already exists in this district"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "County with this name already exists in this district"})
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *CountyHandler) createCounty(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&county).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -94,15 +94,16 @@ func (h *CountyHandler) createCounty(c *gin.Context) {
 }
 
 func (h *CountyHandler) handleGetCounty(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid county number"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid county number"})
 		return
 	}
+	number = commons.Sanitize(number)
 
 	var county models.County
 	if err := h.db.DB.Preload("District").First(&county, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "County not found"})
 		return
 	}
 
@@ -110,24 +111,29 @@ func (h *CountyHandler) handleGetCounty(c *gin.Context) {
 }
 
 func (h *CountyHandler) updateCounty(c *gin.Context) {
-	id := c.Param("number")
+	number := c.Param("id")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid county id"})
+		return
+	}
+	number = commons.Sanitize(number)
 
 	var county models.County
-	if err := h.db.DB.First(&county, "number = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
+	if err := h.db.DB.First(&county, "number = ?", number).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "County not found"})
 		return
 	}
 
 	var payload models.County
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	var existingCounty models.County
 	if err := h.db.DB.Where("name = ? AND district_number = ? AND number != ?",
-		payload.Name, payload.DistrictNumber, id).First(&existingCounty).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "County with this name already exists in this district"})
+		payload.Name, payload.DistrictNumber, number).First(&existingCounty).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "County with this name already exists in this district"})
 		return
 	}
 
@@ -135,7 +141,7 @@ func (h *CountyHandler) updateCounty(c *gin.Context) {
 	county.DistrictNumber = payload.DistrictNumber
 
 	if err := h.db.DB.Save(&county).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -145,16 +151,22 @@ func (h *CountyHandler) updateCounty(c *gin.Context) {
 }
 
 func (h *CountyHandler) deleteCounty(c *gin.Context) {
-	id := c.Param("number")
+	number := c.Param("id")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid county id"})
+		return
+	}
+
+	number = commons.Sanitize(number)
 
 	var county models.County
-	if err := h.db.DB.First(&county, "number = ?", id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
+	if err := h.db.DB.First(&county, "number = ?", number).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "County not found"})
 		return
 	}
 
 	if err := h.db.DB.Delete(&county).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -164,24 +176,24 @@ func (h *CountyHandler) deleteCounty(c *gin.Context) {
 }
 
 func (h *CountyHandler) getSubCounties(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 	number = commons.Sanitize(number)
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid county number"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid county id"})
 		return
 	}
 
 	var county models.County
 	if err := h.db.DB.Preload("SubCounties").First(&county, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "County not found"})
 		return
 	}
 
 	var response []models.SubCountyResponse
 	for _, subCounty := range county.SubCounties {
 		response = append(response, models.SubCountyResponse{
-			Name:   subCounty.Name,
-			Number: subCounty.Number,
+			Name: subCounty.Name,
+			ID:   subCounty.Number,
 		})
 	}
 
@@ -189,9 +201,9 @@ func (h *CountyHandler) getSubCounties(c *gin.Context) {
 }
 
 func (h *CountyHandler) getCountiesByDistrict(c *gin.Context) {
-	districtNumber := c.Param("number")
+	districtNumber := c.Param("id")
 	if districtNumber == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "District number is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "District id is required"})
 		return
 	}
 
@@ -199,14 +211,14 @@ func (h *CountyHandler) getCountiesByDistrict(c *gin.Context) {
 
 	var counties []models.County
 	if err := h.db.DB.Where("district_number = ?", districtNumber).Preload("District").Find(&counties).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
 	var response []models.CountyResponse
 	for _, county := range counties {
 		response = append(response, models.CountyResponse{
-			Number:         county.Number,
+			ID:             county.Number,
 			Name:           county.Name,
 			DistrictNumber: county.DistrictNumber,
 			DistrictName:   county.District.Name,

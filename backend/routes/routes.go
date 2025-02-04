@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"opendataug.org/database"
+	"opendataug.org/middleware"
 	v1 "opendataug.org/routes/v1"
 )
 
@@ -19,6 +20,9 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
+
+	publicAPI := router.Group("/api/v1/public")
+	publicAPI.Use(middleware.RateLimit(60, time.Minute, 5))
 
 	router.Use(static.Serve("./templates/*", static.LocalFile("./templates/*", false)))
 

@@ -27,13 +27,13 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			subcounties.GET("", h.handleAllSubCounties)
-			subcounties.GET("/:number", h.handleGetSubCounty)
-			subcounties.GET("/:number/parishes", h.handleParishes)
+			subcounties.GET("/:id", h.handleGetSubCounty)
+			subcounties.GET("/:id/parishes", h.handleParishes)
 		}
 
 		subcounties.POST("", h.createSubcounty)
-		subcounties.PUT("/:number", h.updateSubCounty)
-		subcounties.DELETE("/:number", h.deleteSubCounty)
+		subcounties.PUT("/:id", h.updateSubCounty)
+		subcounties.DELETE("/:id", h.deleteSubCounty)
 	}
 }
 
@@ -81,7 +81,7 @@ func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
 }
 
 func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 
 	var subcounty models.SubCounty
 	if err := h.db.DB.Preload("Parishes").
@@ -94,7 +94,7 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 }
 
 func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 
 	var subcounty models.SubCounty
 	if err := h.db.DB.First(&subcounty, "number = ?", number).Error; err != nil {
@@ -122,7 +122,7 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 }
 
 func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 
 	var subcounty models.SubCounty
 	if err := h.db.DB.First(&subcounty, "number = ?", number).Error; err != nil {
@@ -141,7 +141,7 @@ func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 }
 
 func (h *SubcountyHandle) handleParishes(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 	if number == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Number is required"})
 		return
@@ -159,8 +159,8 @@ func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	var response []models.ParishResponse
 	for _, parish := range parishes {
 		response = append(response, models.ParishResponse{
-			Name:   parish.Name,
-			Number: parish.Number,
+			Name: parish.Name,
+			ID:   parish.Number,
 		})
 	}
 

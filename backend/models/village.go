@@ -14,4 +14,5 @@ type Village struct {
 
 type VillageResponse struct {
 	Name string `json:"name"`
+	ID   string `json:"id"`
 }

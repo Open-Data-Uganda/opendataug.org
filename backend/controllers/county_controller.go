@@ -26,7 +26,7 @@ func (cc *CountyController) GetCounties(c *gin.Context) {
 }
 
 func (cc *CountyController) GetCounty(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	var county models.County
 	if err := cc.DB.Preload("SubCounties").First(&county, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
@@ -50,7 +50,7 @@ func (cc *CountyController) CreateCounty(c *gin.Context) {
 }
 
 func (cc *CountyController) UpdateCounty(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	var county models.County
 	if err := cc.DB.First(&county, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "County not found"})
@@ -70,7 +70,7 @@ func (cc *CountyController) UpdateCounty(c *gin.Context) {
 }
 
 func (cc *CountyController) DeleteCounty(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	if err := cc.DB.Delete(&models.County{}, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting county"})
 		return
@@ -79,7 +79,7 @@ func (cc *CountyController) DeleteCounty(c *gin.Context) {
 }
 
 func (cc *CountyController) GetDistrictCounties(c *gin.Context) {
-	districtNumber := c.Param("number")
+	districtNumber := c.Param("id")
 	var counties []models.County
 	if err := cc.DB.Where("district_number = ?", districtNumber).Find(&counties).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching district counties"})

@@ -11,6 +11,6 @@ type Region struct {
 }
 
 type RegionResponse struct {
-	Number string `json:"number"`
-	Name   string `json:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

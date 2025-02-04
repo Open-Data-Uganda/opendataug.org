@@ -17,3 +17,9 @@ type APIKey struct {
 	UsageCount int64 `gorm:"default:0"`
 	IsActive   bool  `gorm:"default:true"`
 }
+
+type APIKeyResponse struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+}

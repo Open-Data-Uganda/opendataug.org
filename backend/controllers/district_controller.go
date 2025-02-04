@@ -26,7 +26,7 @@ func (dc *DistrictController) GetDistricts(c *gin.Context) {
 }
 
 func (dc *DistrictController) GetDistrict(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	var district models.District
 	if err := dc.DB.Preload("Counties").First(&district, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "District not found"})
@@ -58,7 +58,7 @@ func (dc *DistrictController) CreateDistrict(c *gin.Context) {
 }
 
 func (dc *DistrictController) UpdateDistrict(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	var district models.District
 	if err := dc.DB.First(&district, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "District not found"})
@@ -78,7 +78,7 @@ func (dc *DistrictController) UpdateDistrict(c *gin.Context) {
 }
 
 func (dc *DistrictController) DeleteDistrict(c *gin.Context) {
-	id := c.Param("number")
+	id := c.Param("id")
 	if err := dc.DB.Delete(&models.District{}, "number = ?", id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting district"})
 		return

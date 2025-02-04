@@ -26,13 +26,13 @@ func (h *RegionHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			apiProtected.GET("", h.handleAllRegions)
-			apiProtected.GET("/:number", h.handleGetRegion)
-			regions.GET("/:number/districts", h.getDistricts)
+			apiProtected.GET("/:id", h.handleGetRegion)
+			regions.GET("/:id/districts", h.getDistricts)
 		}
 
 		regions.POST("", h.createRegion)
-		regions.PUT("/:number", h.updateRegion)
-		regions.DELETE("/:number", h.deleteRegion)
+		regions.PUT("/:id", h.updateRegion)
+		regions.DELETE("/:id", h.deleteRegion)
 	}
 }
 
@@ -48,8 +48,8 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 	var response []models.RegionResponse
 	for _, region := range regions {
 		response = append(response, models.RegionResponse{
-			Number: region.Number,
-			Name:   region.Name,
+			ID:   region.Number,
+			Name: region.Name,
 		})
 	}
 
@@ -57,7 +57,12 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 }
 
 func (h *RegionHandler) handleGetRegion(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid region id"})
+		return
+	}
+	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
@@ -66,8 +71,8 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 	}
 
 	response := models.RegionResponse{
-		Number: region.Number,
-		Name:   region.Name,
+		ID:   region.Number,
+		Name: region.Name,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -102,7 +107,13 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) updateRegion(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region id is required"})
+		return
+	}
+
+	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
@@ -135,9 +146,9 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region number is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Region id is required"})
 		return
 	}
 
@@ -158,11 +169,12 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) getDistricts(c *gin.Context) {
-	number := c.Param("number")
+	number := c.Param("id")
 	if number == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Region number is required"})
 		return
 	}
+	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", number).Error; err != nil {
@@ -173,7 +185,7 @@ func (h *RegionHandler) getDistricts(c *gin.Context) {
 	var districts []models.DistrictResponse
 	for _, district := range region.Districts {
 		districts = append(districts, models.DistrictResponse{
-			Number:       district.Number,
+			ID:           district.Number,
 			Name:         district.Name,
 			Size:         district.Size,
 			TownStatus:   district.TownStatus,
