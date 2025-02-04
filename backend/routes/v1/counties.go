@@ -40,10 +40,10 @@ func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 
 func (h *CountyHandler) toCountyResponse(county models.County) models.CountyResponse {
 	return models.CountyResponse{
-		ID:             county.Number,
-		Name:           county.Name,
-		DistrictNumber: county.DistrictNumber,
-		DistrictName:   county.District.Name,
+		ID:           county.Number,
+		Name:         county.Name,
+		DistrictID:   county.DistrictNumber,
+		DistrictName: county.District.Name,
 	}
 }
 
@@ -218,10 +218,10 @@ func (h *CountyHandler) getCountiesByDistrict(c *gin.Context) {
 	var response []models.CountyResponse
 	for _, county := range counties {
 		response = append(response, models.CountyResponse{
-			ID:             county.Number,
-			Name:           county.Name,
-			DistrictNumber: county.DistrictNumber,
-			DistrictName:   county.District.Name,
+			ID:           county.Number,
+			Name:         county.Name,
+			DistrictID:   county.DistrictNumber,
+			DistrictName: county.District.Name,
 		})
 	}
 

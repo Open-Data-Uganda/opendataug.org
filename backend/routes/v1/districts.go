@@ -86,12 +86,12 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 	response := make([]models.DistrictResponse, len(districts))
 	for i, district := range districts {
 		response[i] = models.DistrictResponse{
-			ID:           district.Number,
-			Name:         district.Name,
-			Size:         district.Size,
-			TownStatus:   district.TownStatus,
-			RegionNumber: district.RegionNumber,
-			RegionName:   district.Region.Name,
+			ID:         district.Number,
+			Name:       district.Name,
+			Size:       district.Size,
+			TownStatus: district.TownStatus,
+			RegionID:   district.RegionNumber,
+			RegionName: district.Region.Name,
 		}
 	}
 
@@ -119,12 +119,12 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	}
 
 	response := models.DistrictResponse{
-		ID:           district.Number,
-		Name:         district.Name,
-		Size:         district.Size,
-		TownStatus:   district.TownStatus,
-		RegionNumber: district.RegionNumber,
-		RegionName:   district.Region.Name,
+		ID:         district.Number,
+		Name:       district.Name,
+		Size:       district.Size,
+		TownStatus: district.TownStatus,
+		RegionID:   district.RegionNumber,
+		RegionName: district.Region.Name,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -147,12 +147,12 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	}
 
 	response := models.DistrictResponse{
-		ID:           district.Number,
-		Name:         district.Name,
-		Size:         district.Size,
-		TownStatus:   district.TownStatus,
-		RegionNumber: district.RegionNumber,
-		RegionName:   district.Region.Name,
+		ID:         district.Number,
+		Name:       district.Name,
+		Size:       district.Size,
+		TownStatus: district.TownStatus,
+		RegionID:   district.RegionNumber,
+		RegionName: district.Region.Name,
 	}
 
 	c.JSON(http.StatusOK, response)
