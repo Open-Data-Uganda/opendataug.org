@@ -91,6 +91,7 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 			Size:         district.Size,
 			TownStatus:   district.TownStatus,
 			RegionNumber: district.RegionNumber,
+			RegionName:   district.Region.Name,
 		}
 	}
 
