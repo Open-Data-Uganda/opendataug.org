@@ -1,14 +1,3 @@
-export type Customer = {
-  generated_customer_number: string;
-  number: string;
-  name: string;
-  postal_code: string;
-  city: string;
-  phone_number: string;
-  email_address: string;
-  status: string;
-};
-
 export type User = {
   number: string;
   name: string;
