@@ -5,9 +5,8 @@ import (
 	"html/template"
 	"log"
 	"os"
-	"strconv"
 
-	"gopkg.in/gomail.v2"
+	"github.com/resend/resend-go/v2"
 )
 
 type Info struct {
@@ -28,6 +27,9 @@ type SMTPCredentials struct {
 }
 
 func (info Info) SendEmail() error {
+
+	client := resend.NewClient(os.Getenv("RESEND_API_KEY"))
+
 	templateUrl := ""
 	if info.Type == "registration" {
 		templateUrl = "./templates/registration.html"
@@ -44,36 +46,28 @@ func (info Info) SendEmail() error {
 	t, err := template.ParseFiles(templateUrl)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 
 	buff := new(bytes.Buffer)
 	if err := t.Execute(buff, info); err != nil {
 		log.Println(err)
-	}
-
-	smtpPortStr := os.Getenv("SMTP_PORT")
-	smtpPort, _ := strconv.Atoi(smtpPortStr)
-
-	smtpCreds := SMTPCredentials{
-		Email:    os.Getenv("SMTP_EMAIL"),
-		Password: os.Getenv("SMTP_PASSWORD"),
-		Port:     smtpPort,
-		Host:     os.Getenv("SMTP_HOST"),
-		Username: os.Getenv("SMTP_USERNAME"),
+		return err
 	}
 
 	result := buff.String()
 
-	m := gomail.NewMessage()
-	m.SetHeader("From", smtpCreds.Email)
-	m.SetHeader("To", info.Email)
-	m.SetHeader("Subject", info.MailType)
-	m.SetBody("text/html", result)
+	params := &resend.SendEmailRequest{
+		To:      []string{info.Email},
+		From:    os.Getenv("FROM_EMAIL"),
+		Html:    result,
+		Subject: info.MailType,
+	}
 
-	d := gomail.NewDialer(smtpCreds.Host, smtpCreds.Port, smtpCreds.Username, smtpCreds.Password)
-
-	if err := d.DialAndSend(m); err != nil {
+	_, err = client.Emails.Send(params)
+	if err != nil {
 		log.Println("Error sending email:", err)
+		return err
 	}
 
 	return nil
