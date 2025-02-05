@@ -33,7 +33,7 @@ func NewJWTService() *JWTService {
 	return &JWTService{}
 }
 
-func (s *JWTService) CreateToken(userNumber string) (*TokenDetails, error) {
+func (s *JWTService) CreateToken(userNumber string, userRole string) (*TokenDetails, error) {
 	privateKey := os.Getenv("ACCESS_TOKEN_PRIVATE_KEY")
 	if privateKey == "" {
 		return nil, fmt.Errorf("missing ACCESS_TOKEN_PRIVATE_KEY environment variable")
@@ -74,6 +74,7 @@ func (s *JWTService) CreateToken(userNumber string) (*TokenDetails, error) {
 		"iss":         baseURL,
 		"aud":         baseURL,
 		"type":        "access",
+		"user_role":   userRole,
 	}
 
 	refreshClaims := jwt.MapClaims{
@@ -85,6 +86,7 @@ func (s *JWTService) CreateToken(userNumber string) (*TokenDetails, error) {
 		"iss":         baseURL,
 		"aud":         baseURL,
 		"type":        "refresh",
+		"user_role":   userRole,
 	}
 
 	*td.AccessToken, err = jwt.NewWithClaims(jwt.SigningMethodRS256, accessClaims).SignedString(key)
@@ -139,7 +141,7 @@ func (s JWTService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	// Validate required fields and their types
-	requiredClaims := []string{"user_number", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type"}
+	requiredClaims := []string{"user_number", "token_uuid", "exp", "iat", "nbf", "iss", "aud", "type", "user_role"}
 	for _, claim := range requiredClaims {
 		if _, ok := claims[claim]; !ok {
 			return nil, fmt.Errorf("validate: missing required claim: %s", claim)
@@ -169,8 +171,9 @@ func (s *JWTService) RefreshToken(refreshToken string) (*TokenDetails, error) {
 		return nil, fmt.Errorf("invalid token type: expected refresh token")
 	}
 
-	userNumber := fmt.Sprint(claims["sub"])
-	newTokens, err := s.CreateToken(userNumber)
+	userNumber := fmt.Sprint(claims["user_number"])
+	userRole := fmt.Sprint(claims["user_role"])
+	newTokens, err := s.CreateToken(userNumber, userRole)
 	if err != nil {
 		return nil, fmt.Errorf("creating new tokens: %w", err)
 	}

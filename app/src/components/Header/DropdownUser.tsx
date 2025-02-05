@@ -13,7 +13,6 @@ const DropdownUser = () => {
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
 
-  // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!dropdown.current) return;
@@ -79,7 +78,7 @@ const DropdownUser = () => {
           dropdownOpen === true ? 'block' : 'hidden'
         }`}>
         <button
-          onClick={logout}
+          onClick={() => logout()}
           className="flex items-center gap-3.5 px-6 py-4 text-13 font-medium duration-300 ease-in-out hover:text-primary  ">
           <ArrowRightEndOnRectangleIcon className=" h-5" />
           Log Out

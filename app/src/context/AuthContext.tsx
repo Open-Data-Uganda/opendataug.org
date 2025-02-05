@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${backendUrl}/auth/refresh`, {
+      const response: Response = await fetch(`${backendUrl}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -83,6 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       const data = await response.json();
+
       setIsAuthenticated(true);
       setUserNumber(data.user_number);
       setUserRole(data.role);
@@ -98,10 +99,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await fetch(`${backendUrl}/auth/logout`, {
+      const response = await fetch(`${backendUrl}/auth/logout`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`
+        }
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Logout failed');
+      }
+    } catch (error) {
+      notifyError('An error occurred while logging you out. ');
     } finally {
       setIsAuthenticated(false);
       setUserNumber(null);

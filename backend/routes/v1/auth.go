@@ -86,6 +86,25 @@ func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
 		return
 	}
 
+	claims, err := h.jwtService.ValidateToken(refreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid refresh token"})
+		return
+	}
+
+	userNumber, ok := claims["user_number"].(string)
+
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+		return
+	}
+
+	var user models.User
+	if err := h.db.DB.Where("number = ?", userNumber).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found"})
+		return
+	}
+
 	newTokens, err := h.userController.RefreshUserSession(refreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
@@ -96,6 +115,8 @@ func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": newTokens.AccessToken,
 		"expires_in":   *newTokens.AccessTokenExpiresIn,
+		"user_number":  userNumber,
+		"role":         user.Role,
 	})
 }
 
