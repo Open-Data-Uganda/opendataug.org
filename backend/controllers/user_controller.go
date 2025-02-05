@@ -228,7 +228,7 @@ func (c *UserController) InvalidateSession(refreshToken string) error {
 }
 
 func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, *services.TokenDetails, error) {
-	tokenDetails, err := c.jwtService.CreateToken(user.Number)
+	tokenDetails, err := c.jwtService.CreateToken(user.Number, user.Role)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create token: %w", err)
 	}

@@ -13,7 +13,7 @@ type Inputs = z.infer<typeof LoginSchema>;
 const Login: React.FC = () => {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login, userNumber, isAuthenticated, userRole, isLoading } = useAuth();
+  const { login, userNumber, isAuthenticated, userRole, isLoading, accessToken } = useAuth();
   const {
     register,
     handleSubmit,
@@ -26,10 +26,10 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && userNumber && userRole) {
+    if (!isLoading && isAuthenticated && userNumber && userRole && accessToken) {
       navigate('/dashboard');
     }
-  }, [isLoading, isAuthenticated, userNumber, userRole, navigate]);
+  }, [isLoading, isAuthenticated, userNumber, userRole, navigate, accessToken]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);

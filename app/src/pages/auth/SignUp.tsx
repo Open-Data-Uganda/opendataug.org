@@ -15,8 +15,14 @@ const SignUp: React.FC = () => {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const { userNumber, isAuthenticated, userRole, isLoading } = useAuth();
+  const { userNumber, isAuthenticated, userRole, isLoading, accessToken } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && userNumber && userRole && accessToken) {
+      navigate('/dashboard');
+    }
+  }, [isLoading, isAuthenticated, userNumber, userRole, navigate, accessToken]);
 
   const {
     register,
@@ -27,11 +33,10 @@ const SignUp: React.FC = () => {
     resolver: zodResolver(SignUpSchema)
   });
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const onSubmit: SubmitHandler<Inputs> = async (_data) => {
     setLoading(true);
     try {
       setDisabled(true);
-      console.log(data);
       setDisabled(false);
       notifySuccess('An email has been sent');
       reset();
@@ -41,12 +46,6 @@ const SignUp: React.FC = () => {
     }
     setLoading(false);
   };
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && userNumber && userRole) {
-      navigate('/dashboard');
-    }
-  }, [isLoading, isAuthenticated, userNumber, userRole, navigate]);
 
   return (
     <div className=" h-screen">
