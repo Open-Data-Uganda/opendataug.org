@@ -11,7 +11,7 @@ import { APIKeySchema } from '../types/schemas';
 type APIKeyFormData = z.infer<typeof APIKeySchema>;
 
 interface CreateAPIKeyProps {
-  onCreateKey?: (name: string) => Promise<void>;
+  onCreateKey?: (data: any) => Promise<void>;
 }
 
 const CreateAPIKey = ({ onCreateKey }: CreateAPIKeyProps) => {
@@ -34,7 +34,7 @@ const CreateAPIKey = ({ onCreateKey }: CreateAPIKeyProps) => {
     try {
       setLoading(true);
       if (onCreateKey) {
-        await onCreateKey(data.name);
+        await onCreateKey(data);
       }
       setIsModalOpen(false);
       reset();

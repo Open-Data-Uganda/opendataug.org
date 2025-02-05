@@ -21,5 +21,6 @@ type APIKey struct {
 type APIKeyResponse struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
+	Key       string    `json:"key"`
 	CreatedAt time.Time `json:"created_at"`
 }

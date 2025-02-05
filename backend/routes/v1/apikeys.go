@@ -129,6 +129,7 @@ func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 		response[i] = models.APIKeyResponse{
 			ID:        key.Number,
 			Name:      key.Name,
+			Key:       key.Key,
 			CreatedAt: key.CreatedAt,
 		}
 	}
@@ -149,6 +150,8 @@ func (h *APIKeyHandler) deleteAPIKey(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "API key number is missing"})
 		return
 	}
+
+	keyNumber = commons.Sanitize(keyNumber)
 
 	if err := h.controller.DeleteAPIKey(currentUser.Number, keyNumber); err != nil {
 		status := http.StatusInternalServerError
