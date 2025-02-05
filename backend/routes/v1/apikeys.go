@@ -10,6 +10,7 @@ import (
 	"opendataug.org/commons"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -62,35 +63,35 @@ func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 	var payload CreateAPIKeyRequest
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
 		return
 	}
 
 	if payload.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "API Key name is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("API Key name is required"))
 		return
 	}
 
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("User not found in context"))
 		return
 	}
 	currentUser := user.(*models.User)
 
 	exists, err := h.controller.APIKeyNameExists(currentUser.Number, payload.Name)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to check API key name"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to check API key name"))
 		return
 	}
 	if exists {
-		c.JSON(http.StatusConflict, gin.H{"message": "An API key with this name already exists"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("API key with this name already exists"))
 		return
 	}
 
 	key, err := generateAPIKey()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate API key"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to generate API key"))
 		return
 	}
 
@@ -103,7 +104,7 @@ func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 	}
 
 	if err := h.controller.CreateAPIKey(apiKey); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create API key"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to create API key"))
 		return
 	}
 
@@ -113,14 +114,14 @@ func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("User not found in context"))
 		return
 	}
 	currentUser := user.(*models.User)
 
 	keys, err := h.controller.GetAPIKeys(currentUser.Number)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch API keys"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to fetch API keys"))
 		return
 	}
 
@@ -140,25 +141,25 @@ func (h *APIKeyHandler) listAPIKeys(c *gin.Context) {
 func (h *APIKeyHandler) deleteAPIKey(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found in context"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("User not found in context"))
 		return
 	}
 	currentUser := user.(*models.User)
 
 	keyNumber := c.Param("id")
 	if keyNumber == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "API key number is missing"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("API key number is missing"))
 		return
 	}
 
 	keyNumber = commons.Sanitize(keyNumber)
 
 	if err := h.controller.DeleteAPIKey(currentUser.Number, keyNumber); err != nil {
-		status := http.StatusInternalServerError
 		if err == gorm.ErrRecordNotFound {
-			status = http.StatusNotFound
+			c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("API key not found"))
+			return
 		}
-		c.JSON(status, gin.H{"message": "Failed to delete API key"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to delete API key"))
 		return
 	}
 
