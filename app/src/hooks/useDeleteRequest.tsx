@@ -1,19 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { backendUrl } from '../config';
+import { useAuth } from '../context/AuthContext';
 
-const useDeleteRequest = (queryKey: string, url: string) => {
-  const token = localStorage.getItem('token');
-  const userIdentifier = localStorage.getItem('userNumber');
+interface UseDeleteRequestProps {
+  queryKey: string;
+  url: string;
+}
+
+const useDeleteRequest = ({ queryKey, url }: UseDeleteRequestProps) => {
+  const { userNumber, accessToken } = useAuth();
 
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, AxiosError>({
     mutationFn: async () => {
-      await axios.delete(`${backendUrl}/v1/${url}`, {
+      await axios.delete(`${backendUrl}/${url}`, {
+        withCredentials: true,
         headers: {
-          Authorization: `Bearer ${token}`,
-          'User-Number': userIdentifier
+          'User-Number': userNumber,
+          Authorization: `Bearer ${accessToken}`
         }
       });
     },

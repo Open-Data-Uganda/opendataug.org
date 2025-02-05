@@ -36,7 +36,7 @@ const TableError: FC = () => {
 const TableNoData: FC = () => {
   return (
     <tr className=" w-full">
-      <TableData>No data</TableData>
+      <TableData>You have't created an API Key yet </TableData>
     </tr>
   );
 };

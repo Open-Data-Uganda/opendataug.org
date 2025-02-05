@@ -13,7 +13,7 @@ import useDeleteRequest from '../hooks/useDeleteRequest';
 import useGetRequest from '../hooks/useGetRequest';
 import usePostRequest from '../hooks/usePostRequest';
 import DefaultLayout from '../layout/DefaultLayout';
-import { Quotation } from '../types';
+import { APIKey } from '../types';
 import CreateAPIKey from './CreateAPIKey';
 
 const Overview: React.FC = () => {
@@ -21,16 +21,20 @@ const Overview: React.FC = () => {
     url: 'api-keys',
     queryKey: ['api-keys']
   });
+
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState('');
-  const deleteAPIKey = useDeleteRequest('api-keys', `api-keys/${selected}`);
+  const deleteAPIKeyMutation = useDeleteRequest({
+    queryKey: 'api-keys',
+    url: `api-keys/${selected}`
+  });
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [visibleId, setVisibleId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     try {
-      await deleteAPIKey.mutateAsync();
+      await deleteAPIKeyMutation.mutateAsync();
       setShowModal(false);
       notifySuccess('API Key deleted');
     } catch (err) {
@@ -64,18 +68,23 @@ const Overview: React.FC = () => {
   const queryClient = useQueryClient();
 
   const handleCreateAPIKey = async (data: any) => {
-    setLoading(true);
     try {
-      await mutateAsync(data.name);
+      await mutateAsync(data);
       notifySuccess('API Key created successfully');
-    } catch (error) {
-      notifyError('Error occurred while creating the API Key');
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        notifyError('An API key with this name already exists');
+      } else if (error?.response?.status === 400) {
+        notifyError('API Key name is required');
+      } else {
+        notifyError('Error occurred while creating the API Key');
+      }
     } finally {
-      setLoading(false);
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });
     }
   };
 
+  console.log(data);
   return (
     <DefaultLayout>
       {showModal && (
@@ -101,36 +110,30 @@ const Overview: React.FC = () => {
               <tbody>
                 {isLoading && <TableLoader />}
                 {isError && <TableError />}
-                {data?.data === null && <TableNoData />}
+                {data?.length === 0 && <TableNoData />}
 
-                {data?.data?.map((quotation: Quotation) => (
-                  <tr key={quotation.number}>
+                {data?.map((api_key: APIKey) => (
+                  <tr key={api_key.id}>
                     <TableData> Deploy</TableData>
                     <TableData>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => toggleVisibility('9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62')}
+                          onClick={() => toggleVisibility(api_key.key)}
                           className="flex cursor-pointer items-center gap-2 hover:text-primary"
-                          title={
-                            visibleId === '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62' ? 'Hide API Key' : 'Show API Key'
-                          }>
-                          <span>
-                            {visibleId === '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62'
-                              ? '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62'
-                              : getHiddenValue('9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62')}
-                          </span>
-                          {visibleId === '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62' ? (
+                          title={visibleId === api_key.key ? 'Hide API Key' : 'Show API Key'}>
+                          <span>{visibleId === api_key.key ? api_key.key : getHiddenValue(api_key.key)}</span>
+                          {visibleId === api_key.key ? (
                             <EyeSlashIcon className="h-5 w-5" />
                           ) : (
                             <EyeIcon className="h-5 w-5" />
                           )}
                         </button>
-                        {visibleId === '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62' && (
+                        {visibleId === api_key.key && (
                           <button
-                            onClick={() => handleCopyClick('9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62')}
+                            onClick={() => handleCopyClick(api_key.key)}
                             className="flex cursor-pointer items-center hover:text-primary"
                             title="Click to copy">
-                            {copiedId === '9e6d336a-2f98-43e9-9fa6-11b4d5cdaf62' ? (
+                            {copiedId === api_key.key ? (
                               <ClipboardDocumentCheckIcon className="h-5 w-5 text-green-500" />
                             ) : (
                               <ClipboardDocumentIcon className="h-5 w-5" />
@@ -142,10 +145,9 @@ const Overview: React.FC = () => {
                     <TableData>
                       <Actions
                         onTrashClick={() => {
+                          setSelected(api_key.id);
                           setShowModal(!showModal);
-                          setSelected(quotation.number);
                         }}
-                        detailsUrl={`quotations/${quotation.number}`}
                       />
                     </TableData>
                   </tr>
