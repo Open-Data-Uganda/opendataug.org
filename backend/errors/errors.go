@@ -61,7 +61,7 @@ func NewBadRequestError(message string) *APIError {
 func NewInternalError(message string) *APIError {
 	return &APIError{
 		Type:       ErrorTypeInternal,
-		Message:    "Internal server error", // Generic message for security
+		Message:    "Internal server error",
 		StatusCode: http.StatusInternalServerError,
 	}
 }
@@ -72,4 +72,11 @@ func NewRateLimitError(message string) *APIError {
 		Message:    message,
 		StatusCode: http.StatusTooManyRequests,
 	}
+}
+
+func NewUnauthorizedError(message string) *APIError {
+	return &APIError{
+		Type:       ErrorTypeUnauthorized,
+		Message:    message,
+		StatusCode: http.StatusUnauthorized}
 }
