@@ -3,44 +3,46 @@ slug: /
 sidebar_position: 1
 ---
 
-# Welcome to [Your Project Name]
+# Uganda Geospatial API
 
-Let's discover **[Your Project]** in less than 5 minutes.
+Access comprehensive data about Uganda's districts, villages, and administrative units through a simple API.
 
-## Getting Started
+## Overview
 
-Get started by following this quick tutorial.
+The **Uganda Geospatial API** provides developers with programmatic access to detailed information about Uganda's administrative divisions and geographical data. Whether you're building applications for local governance, analyzing demographic patterns, or developing location-based services, our API delivers accurate and up-to-date data about Uganda's geography.
 
-### What you'll need
+## Key Features
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+Access reliable data about:
 
-## Generate a new site
+- Districts and their administrative boundaries
+- Sub-counties and parishes
+- Villages and settlements
+- Geographic coordinates
+- Population statistics
+- Administrative codes
+- Historical boundary changes
 
-Generate a new Docusaurus site using the **classic template**.
+## Quick Start
 
-The classic template will automatically be added to your project after you run the command:
+1. **Sign up** - Create an account to get your API key
+2. **Authentication** - Add your API key to request headers
+3. **Make requests** - Start querying our endpoints
+4. **Handle responses** - Process returned JSON data
 
-```bash
-npm init docusaurus@latest my-website classic
-```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
+### Example Request
 
 ```bash
-cd my-website
-npm run start
+# Fetch all districts
+curl -X GET https://api.opendataug.com/v1/districts \
+  -H "x-api-key: Bearer YOUR_API_KEY"
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+## Next Steps
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+Ready to dive in? Check out our:
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+- [Authentication Guide](authentication.md)
+- [API Reference](api-reference.md)
+- [Code Examples](code-examples.md)
+- [Rate Limits](rate-limits.md)

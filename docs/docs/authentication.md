@@ -1,23 +1,137 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
+
+## sidebar_position: 3
 
 # Authentication
 
-Learn how to authenticate your requests to our API.
+Learn how to authenticate your requests to our Uganda Districts API. All API endpoints require authentication using an API key.
 
 ## Authentication Methods
 
 ### API Keys
 
-[Explain API key authentication]
+To access the API, you'll need to include your API key in the `Authorization` header of each request. API keys provide a simple and secure way to authenticate your requests.
 
-### OAuth 2.0
+#### Getting an API Key
 
-[Explain OAuth flow if applicable]
+To obtain an API key:
+
+1. Create an account on our platform
+2. Navigate to your account dashboard
+3. Go to the "API Keys" section
+4. Click "Generate New API Key"
+5. Save your API key securely - it will only be shown once
+
+#### Using Your API Key
+
+Include your API key in all API requests using the `Authorization` header with a Bearer token:
+
+```bash
+curl -H "Authorization: Bearer your_api_key_here" \
+https://api.example.com/v1/counties
+
+```
+
+#### API Key Format
+
+API keys follow this format: `uk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+
+- `uk`: Identifies our Uganda Districts API
+- `live`: Indicates whether it's a live or test key
+- Random string: Unique identifier for your API key
 
 ## Security Best Practices
 
-- [Best practice 1]
-- [Best practice 2]
-- [Best practice 3]
+To ensure secure usage of our API, follow these best practices:
+
+- **Protect Your API Keys**: Never share your API keys or commit them to version control
+- **Use Environment Variables**: Store API keys as environment variables instead of hardcoding them
+- **Separate Keys for Different Environments**: Use different API keys for development and production
+- **Regular Rotation**: Rotate your API keys periodically for enhanced security
+- **Minimum Permissions**: Use keys with the minimum required permissions for your use case
+
+### Code Examples
+
+Here's how to properly use your API key in different programming languages:
+
+```javascript
+const apiKey = process.env.UGANDA_API_KEY;
+fetch('https://api.example.com/v1/districts', {
+headers: {
+'Authorization': Bearer ${apiKey}
+}
+});
+```
+
+Python
+
+```python
+import os
+import requests
+api_key = os.getenv('UGANDA_API_KEY')
+headers = {'Authorization': f'Bearer {api_key}'}
+response = requests.get('https://api.example.com/v1/districts', headers=headers)
+```
+
+```go
+
+import (
+"net/http"
+"os"
+)
+apiKey := os.Getenv("UGANDA_API_KEY")
+req, := http.NewRequest("GET", "https://api.example.com/v1/districts", nil)
+req.Header.Add("Authorization", "Bearer " + apiKey)
+```
+
+## Error Responses
+
+When authentication fails, you'll receive one of these responses:
+
+```json
+// 401 Unauthorized - Missing or invalid API key
+{
+"error": {
+"code": "unauthorized",
+"message": "No API key provided or invalid API key"
+}
+}
+
+
+// 403 Forbidden - API key lacks required permissions
+{
+"error": {
+"code": "forbidden",
+"message": "API key doesn't have permission to access this resource"
+}
+}
+```
+
+## Rate Limiting
+
+API requests are rate-limited based on your API key:
+
+- Free tier: 100 requests per hour
+- Standard tier: 1,000 requests per hour
+- Premium tier: 10,000 requests per hour
+
+Rate limit headers are included in each response:
+
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640995200
+
+---
+
+# Troubleshooting
+
+If you're experiencing authentication issues:
+
+1. Verify your API key is valid and active
+2. Check the Authorization header format
+3. Ensure you're not exceeding rate limits
+4. Confirm your API key has the necessary permissions
+
+For additional help, contact our support team at support@example.com or visit our [GitHub repository](https://github.com/example/uganda-api) for more examples.

@@ -8,6 +8,8 @@ import (
 
 	"encoding/base64"
 
+	"errors"
+
 	"github.com/badoux/checkmail"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -15,6 +17,7 @@ import (
 	"opendataug.org/commons"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 	"opendataug.org/services"
 )
@@ -59,19 +62,19 @@ func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var payload models.SignInRequest
 	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
 		return
 	}
 
 	user, err := h.userController.AuthenticateUser(payload.Email, payload.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError(err.Error()))
 		return
 	}
 
 	response, tokens, err := h.userController.CreateLoginSession(user)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -82,32 +85,35 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing refresh token"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Missing refresh token"))
 		return
 	}
 
 	claims, err := h.jwtService.ValidateToken(refreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid refresh token"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid refresh token"))
 		return
 	}
 
 	userNumber, ok := claims["user_number"].(string)
-
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token claims"))
 		return
 	}
 
 	var user models.User
 	if err := h.db.DB.Where("number = ?", userNumber).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusUnauthorized, customerrors.NewNotFoundError("User not found"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch user"))
 		return
 	}
 
 	newTokens, err := h.userController.RefreshUserSession(refreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+		c.JSON(http.StatusUnauthorized, customerrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -178,13 +184,13 @@ func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *services.TokenDetai
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	var payload controllers.ResetPasswordInput
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
 		return
 	}
 
 	userToken, err := h.userController.InitiatePasswordReset(payload.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -198,7 +204,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	}
 
 	if err := emailService.SendEmail(); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to send email"})
+		c.JSON(http.StatusBadRequest, customerrors.NewInternalError("Failed to send email"))
 		return
 	}
 
@@ -208,38 +214,38 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 func (h *AuthHandler) SetPassword(c *gin.Context) {
 	var payload models.ResetPassword
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
 		return
 	}
 
 	tokenString := c.Query("token")
 	if tokenString == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Reset token is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Reset token is required"))
 		return
 	}
 
 	claims, err := h.jwtService.ValidateToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token", "err": err.Error()})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token"))
 		c.Abort()
 		return
 	}
 
 	userNumber, ok := claims["user_number"].(string)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token claims"))
 		c.Abort()
 		return
 	}
 
 	tokenType, ok := claims["type"].(string)
 	if !ok || tokenType != "password_reset" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token type"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token type"))
 		return
 	}
 
 	if err := h.userController.SetNewPassword(tokenString, userNumber, payload.Password, payload.ConfirmPassword); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -297,31 +303,29 @@ func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
 func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	var payload models.SignUpInput
 	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
 		return
 	}
 
 	payload.Prepare()
 	if err := payload.Validate(); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Failed to process input"})
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
 		return
 	}
 
-	userNumber := commons.UUIDGenerator()
-
 	if err := checkmail.ValidateFormat(payload.Email); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid email address"})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Invalid email address", nil))
 		return
 	}
 
 	emailExists, _ := h.userController.CheckEmailExists(strings.ToLower(payload.Email))
 	if emailExists {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Email is already in use"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Email is already in use"))
 		return
 	}
 
 	user := models.User{
-		Number:    userNumber,
+		Number:    commons.UUIDGenerator(),
 		FirstName: payload.FirstName,
 		OtherName: payload.OtherName,
 		Email:     strings.ToLower(payload.Email),
@@ -332,7 +336,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 
 	emailExists, _ = h.userController.CheckEmailExists(user.Email)
 	if emailExists {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Email is already in use"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Email is already in use"))
 		return
 	}
 
@@ -345,7 +349,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 
 	if err := tx.Create(&user).Error; err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to register user"})
+		c.JSON(http.StatusBadRequest, customerrors.NewDatabaseError("Failed to register user"))
 		return
 	}
 
@@ -354,7 +358,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	claims := jwt.MapClaims{
 		"exp":         time.Now().Add(24 * time.Hour).Unix(),
 		"type":        "password_reset",
-		"user_number": userNumber,
+		"user_number": user.Number,
 		"token_uuid":  commons.UUIDGenerator(),
 		"iat":         time.Now().UTC().Unix(),
 		"nbf":         time.Now().UTC().Unix(),
@@ -386,13 +390,13 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 
 	saveUserPasswordToken := models.PasswordReset{
 		Number:     commons.UUIDGenerator(),
-		UserNumber: userNumber,
+		UserNumber: user.Number,
 		Token:      userToken,
 		Status:     "ACTIVE",
 	}
 
 	if err := tx.Create(&saveUserPasswordToken).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to save user password"})
+		c.JSON(http.StatusBadRequest, customerrors.NewDatabaseError("Failed to save user password"))
 		return
 	}
 
@@ -406,12 +410,12 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	}
 
 	if err := emailService.SendEmail(); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to send email"})
+		c.JSON(http.StatusBadRequest, customerrors.NewInternalError("Failed to send email"))
 		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to register user"})
+		c.JSON(http.StatusBadRequest, customerrors.NewDatabaseError("Failed to register user"))
 		return
 	}
 
@@ -422,7 +426,7 @@ func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "No token provided"})
+			c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("No token provided"))
 			c.Abort()
 			return
 		}
@@ -431,21 +435,26 @@ func (h *AuthHandler) TokenAuthMiddleware() gin.HandlerFunc {
 
 		claims, err := h.jwtService.ValidateToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token"))
 			c.Abort()
 			return
 		}
 
 		userNumber, ok := claims["user_number"].(string)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token claims"})
+			c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token claims"))
 			c.Abort()
 			return
 		}
 
 		var user models.User
 		if err := h.db.DB.Where("number = ?", userNumber).First(&user).Error; err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized", "usernumber": user.Name})
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusUnauthorized, customerrors.NewNotFoundError("User not found"))
+				c.Abort()
+				return
+			}
+			c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch user"))
 			c.Abort()
 			return
 		}
@@ -459,27 +468,37 @@ func (h *AuthHandler) APIAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		apiKey := c.Request.Header.Get("x-api-key")
 		if apiKey == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "No API Key provided"})
+			c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("No API Key provided"))
 			c.Abort()
 			return
 		}
 
 		var apiKeyModel models.APIKey
 		if err := h.db.DB.Where("key = ? AND is_active = ?", apiKey, true).First(&apiKeyModel).Error; err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid API key"})
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid API key"))
+				c.Abort()
+				return
+			}
+			c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch API key"))
 			c.Abort()
 			return
 		}
 
 		if apiKeyModel.ExpiresAt != nil && apiKeyModel.ExpiresAt.Before(time.Now()) {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "API key has expired"})
+			c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("API key has expired"))
 			c.Abort()
 			return
 		}
 
 		var user models.User
 		if err := h.db.DB.Where("number = ?", apiKeyModel.UserNumber).First(&user).Error; err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found"})
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusUnauthorized, customerrors.NewNotFoundError("User not found"))
+				c.Abort()
+				return
+			}
+			c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch user"))
 			c.Abort()
 			return
 		}

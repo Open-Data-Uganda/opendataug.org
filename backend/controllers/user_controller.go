@@ -152,7 +152,7 @@ func (c *UserController) RefreshUserSession(refreshToken string) (*services.Toke
 func (c *UserController) InitiatePasswordReset(email string) (string, error) {
 	user, err := c.FindByEmail(email)
 	if err != nil {
-		return "", fmt.Errorf("user not found")
+		return "", fmt.Errorf("User with email address does not exist.")
 	}
 
 	resetToken := utils.UUIDGenerator()

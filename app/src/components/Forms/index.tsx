@@ -1,21 +1,9 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { FC, ReactNode } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { ErrorMessage } from '../ErrorMessage';
 
 interface LabelProps {
   text: string;
   id: string;
-}
-
-interface InputProps {
-  type: string;
-  placeholder?: string;
-  name: string;
-  validation: object;
-  value?: any;
-  required?: boolean;
-  onChange?: (e: any) => void;
 }
 
 interface SelectProps {
@@ -60,29 +48,4 @@ const Select: FC<SelectProps> = ({ children }) => {
   );
 };
 
-const Input: React.FC<InputProps> = ({ type, placeholder, onChange, name, value, required, validation }) => {
-  const {
-    register,
-    formState: { errors }
-  } = useFormContext();
-
-  return (
-    <>
-      <input
-        {...register(name, validation)}
-        className={`block w-full appearance-none rounded border px-3 py-2.5 leading-normal text-gray-600 hover:border-blue-700 focus:bg-white focus:outline-none ${
-          errors[name] ? 'border-red-500' : 'border-gray-400'
-        }`}
-        id={name}
-        required={required}
-        onChange={onChange}
-        value={value}
-        type={type}
-        placeholder={placeholder}
-      />
-      {errors[name]?.message && <ErrorMessage error={errors[name]?.message?.toString()} />}
-    </>
-  );
-};
-
-export { Input, Label, QuotationLabel, Select };
+export { Label, QuotationLabel, Select };

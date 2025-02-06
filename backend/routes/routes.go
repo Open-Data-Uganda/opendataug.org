@@ -21,9 +21,6 @@ func SetupRouter(db *database.Database) *gin.Engine {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	publicAPI := router.Group("/api/v1/public")
-	publicAPI.Use(middleware.RateLimit(60, time.Minute, 5))
-
 	router.Use(static.Serve("./templates/*", static.LocalFile("./templates/*", false)))
 
 	router.Use(cors.New(cors.Config{
@@ -37,6 +34,9 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	}))
 
 	v1Group := router.Group("/v1")
+	v1Group.Use(middleware.RateLimit(60, time.Minute, 5))
+	v1Group.Use(middleware.TimeoutMiddleware(1 * time.Second))
+
 	{
 		// Public routes
 		authHandler := v1.NewAuthHandler(db)
