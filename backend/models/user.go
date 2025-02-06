@@ -14,13 +14,10 @@ type User struct {
 	Number    string `gorm:"primaryKey;type:varchar(36);not null;unique" json:"number"`
 	Email     string `gorm:"uniqueIndex;not null"`
 	Name      string `gorm:"not null"`
-	Provider  string `gorm:"not null"`
-	AuthID    string `gorm:"uniqueIndex;not null"`
-	AvatarURL string
-	FirstName string `gorm:"type:text;size:255;not null;" json:"firstname"`
-	OtherName string `gorm:"type:text;size:255;" json:"othername"`
+	FirstName string `gorm:"type:text;size:255;not null;" json:"first_name"`
+	OtherName string `gorm:"type:text;size:255;" json:"other_name"`
 	Role      string `gorm:"type:text;size:100;default:USER;" json:"role"`
-	IsAdmin   bool   `gorm:"default:false;" json:"IsAdmin"`
+	IsAdmin   bool   `gorm:"default:false;" json:"is_admin"`
 	Status    string `json:"status" gorm:"size:100;not null"`
 	gorm.Model
 }

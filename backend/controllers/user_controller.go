@@ -149,24 +149,13 @@ func (c *UserController) RefreshUserSession(refreshToken string) (*services.Toke
 	return c.jwtService.RefreshToken(refreshToken)
 }
 
-func (c *UserController) InitiatePasswordReset(email string) (string, error) {
+func (c *UserController) InitiatePasswordReset(email string) (*models.User, error) {
 	user, err := c.FindByEmail(email)
 	if err != nil {
-		return "", fmt.Errorf("User with email address does not exist.")
+		return nil, fmt.Errorf("User with email address does not exist.")
 	}
 
-	resetToken := utils.UUIDGenerator()
-
-	passwordReset := &models.PasswordReset{
-		Token:      resetToken,
-		UserNumber: user.Number,
-	}
-
-	if err := c.SavePasswordReset(passwordReset); err != nil {
-		return "", fmt.Errorf("failed to save reset token: %w", err)
-	}
-
-	return resetToken, nil
+	return user, nil
 }
 
 func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmPassword string) error {
@@ -194,7 +183,6 @@ func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmP
 
 	tx := c.db.DB.Begin()
 
-	// Set user status to ACTIVE
 	if err := tx.Model(&models.User{}).Where("number = ?", reset.UserNumber).Update("status", "ACTIVE").Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to activate user account: %w", err)
@@ -205,7 +193,6 @@ func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmP
 		return fmt.Errorf("failed to reset password: %w", err)
 	}
 
-	// Mark reset token as used
 	if err := tx.Model(reset).Update("status", "INACTIVE").Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update reset token: %w", err)
