@@ -18,14 +18,6 @@ type Info struct {
 	Type        string
 }
 
-type SMTPCredentials struct {
-	Email    string
-	Password string
-	Port     int
-	Host     string
-	Username string
-}
-
 func (info Info) SendEmail() error {
 
 	client := resend.NewClient(os.Getenv("RESEND_API_KEY"))

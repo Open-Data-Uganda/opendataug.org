@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, useParams } from 'react-router-dom';
 import { z } from 'zod';
-import Logo from '../../assets/logo.svg';
+import Button from '../../components/Button';
+import Input from '../../components/Input';
 import { notifyError, notifySuccess } from '../../components/toasts';
 import { backendUrl } from '../../config';
 import { ResetPasswordSchema } from '../../types/schemas';
@@ -57,60 +58,106 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className=" flex h-screen min-w-full items-center justify-center text-black">
-      <div className="w-full p-4 sm:w-4/12 md:w-6/12 lg:w-3/12 ">
-        <div className=" flex items-center justify-center">
-          <img className=" mb-6 lg:mb-10 lg:h-20" src={Logo} alt="" />
+    <div className="h-screen">
+      <div className="border-b border-gray-200">
+        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
+          <img
+            src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=900"
+            alt="Uganda Data Logo"
+            className="h-8"
+          />
+        </div>
+      </div>
+
+      <div className="flex min-h-screen">
+        <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
+          <div className="w-full max-w-md">
+            <div className="mb-8">
+              <h1 className="mb-2 text-2xl font-bold">Reset Your Password</h1>
+              <p className="text-gray-600">
+                Enter your email address below and we'll send you instructions to reset your password.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Input
+                label="Email address"
+                type="email"
+                placeholder="Enter your registered email"
+                required
+                error={errors.email?.message}
+                {...register('email')}
+              />
+
+              <div className="mb-6 mt-2">
+                <p className="text-sm text-gray-500">
+                  Make sure to use the email address associated with your account.
+                </p>
+              </div>
+
+              <Button type="submit" disabled={disabled} loading={loading} fullWidth>
+                Send Reset Instructions
+              </Button>
+
+              <div className="mt-6 space-y-4">
+                <p className="text-center text-sm text-gray-600">
+                  Remember your password?{' '}
+                  <Link to="/login" className="text-blue-600 hover:text-blue-700">
+                    Back to Login
+                  </Link>
+                </p>
+                <p className="text-center text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <Link to="/" className="text-blue-600 hover:text-blue-700">
+                    Sign Up
+                  </Link>
+                </p>
+              </div>
+            </form>
+
+            <div className="mt-8">
+              <div className="rounded-md bg-blue-50 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-blue-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                      After submitting, please check your email inbox and spam folder. The reset link will expire in 1
+                      hour.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mb-9">
-          <h2 className=" text-2xl font-bold text-black sm:text-title-xl2">Reset Password</h2>
-
-          <p>We will send a password reset link to your email.</p>
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-9">
-            <label className="mb-2.5 block font-medium text-black" id="email">
-              Email <span className=" text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input id="email" type="email" {...register('email')} placeholder="Email" className="form-class" />
-              {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+        <div className="hidden flex-col justify-between bg-gray-50 p-8 lg:flex lg:w-1/2">
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Secure Password Reset</h2>
+              <p className="mt-4 text-lg text-gray-600">
+                We take your security seriously. Your reset link will be sent securely to your email address.
+              </p>
             </div>
           </div>
 
-          <div className="mb-5">
-            <button
-              disabled={disabled}
-              type="submit"
-              className="inline-flex w-full items-center justify-center rounded bg-primary py-2 text-center font-medium text-white hover:bg-opacity-90">
-              {loading ? (
-                <svg
-                  className="-ml-1 mr-3 h-5 w-5 animate-spin text-black"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24">
-                  <circle className="opacity-25" stroke="currentColor" strokeWidth="4" cx="12" cy="12" r="10"></circle>
-                  <path
-                    className="opacity-75"
-                    fill="#fff"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                'Send Email'
-              )}
-            </button>
+          <div className="text-center">
+            <p className="mb-4 text-gray-600">Trusted by organizations across Uganda</p>
+            <div className="flex items-center justify-center space-x-8">{/* Partner logos remain unchanged */}</div>
           </div>
-
-          <div className="mt-6 text-center">
-            <p>
-              Already have an account?{' '}
-              <Link to="/" className="text-primary underline">
-                Sign In
-              </Link>
-            </p>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

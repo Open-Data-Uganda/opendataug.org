@@ -6,6 +6,7 @@ import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { notifyError, notifySuccess } from '../../components/toasts';
+import { backendUrl } from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import { SignUpSchema } from '../../types/schemas';
 
@@ -33,18 +34,38 @@ const SignUp: React.FC = () => {
     resolver: zodResolver(SignUpSchema)
   });
 
-  const onSubmit: SubmitHandler<Inputs> = async (_data) => {
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
+    setDisabled(true);
+
     try {
-      setDisabled(true);
-      setDisabled(false);
-      notifySuccess('An email has been sent');
+      const response = await fetch(`${backendUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          first_name: data.firstName,
+          other_name: data.lastName,
+          email: data.email
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to sign up');
+      }
+
+      notifySuccess('Sign up successful! Please check your email to verify your account.');
       reset();
+      navigate('/login');
     } catch (error) {
       notifyError((error as Error).message);
+    } finally {
+      setLoading(false);
       setDisabled(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -96,15 +117,6 @@ const SignUp: React.FC = () => {
                 required
                 error={errors.email?.message}
                 {...register('email')}
-              />
-
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Password"
-                required
-                error={errors.password?.message}
-                {...register('password')}
               />
 
               <div className="mb-6 space-y-4">
