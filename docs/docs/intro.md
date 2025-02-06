@@ -41,6 +41,3 @@ curl -X GET https://api.opendataug.com/v1/districts \
 Ready to dive in? Check out our:
 
 - [Authentication Guide](authentication.md)
-- [API Reference](api-reference.md)
-- [Code Examples](code-examples.md)
-- [Rate Limits](rate-limits.md)
