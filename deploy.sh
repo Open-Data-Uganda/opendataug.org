@@ -1,6 +1,8 @@
 #!/bin/bash
 sudo chmod 666 /var/run/docker.sock 
 
+sudo sh ./down.sh
+
 echo "Build starting......\n"
 
 echo "Pulling ropes......\n"
