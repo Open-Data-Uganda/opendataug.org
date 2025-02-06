@@ -24,7 +24,7 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	router.Use(static.Serve("./templates/*", static.LocalFile("./templates/*", false)))
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:              []string{"http://localhost:3000", "http://localhost:5173", "https://opendataug.org"},
+		AllowOrigins:              []string{"http://localhost:3000", "http://localhost:5173", "https://app.opendataug.org"},
 		AllowMethods:              []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:              []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-Key", "User-Number"},
 		ExposeHeaders:             []string{"Content-Length", "Set-Cookie"},
