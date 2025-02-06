@@ -15,13 +15,11 @@ The **Uganda Geospatial API** provides developers with programmatic access to de
 
 Access reliable data about:
 
-- Districts and their administrative boundaries
-- Sub-counties and parishes
-- Villages and settlements
-- Geographic coordinates
-- Population statistics
-- Administrative codes
-- Historical boundary changes
+- Districts
+- Counties
+- Sub-counties
+- Parishes, and
+- Villages
 
 ## Quick Start
 
@@ -42,8 +40,7 @@ curl -X GET https://api.opendataug.com/v1/districts \
 
 Ready to dive in? Check out our:
 
-<!--
 - [Authentication Guide](authentication.md)
 - [API Reference](api-reference.md)
 - [Code Examples](code-examples.md)
-- [Rate Limits](rate-limits.md) -->
+- [Rate Limits](rate-limits.md)

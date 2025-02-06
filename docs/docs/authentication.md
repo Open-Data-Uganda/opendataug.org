@@ -2,8 +2,6 @@
 sidebar_position: 2
 ---
 
-## sidebar_position: 3
-
 # Authentication
 
 Learn how to authenticate your requests to our Uganda Districts API. All API endpoints require authentication using an API key.
@@ -26,20 +24,18 @@ To obtain an API key:
 
 #### Using Your API Key
 
-Include your API key in all API requests using the `Authorization` header with a Bearer token:
+Include your API key in all API requests using the `x-api-key` header with an API Key:
 
 ```bash
-curl -H "Authorization: Bearer your_api_key_here" \
-https://api.example.com/v1/counties
-
+curl -H "x-api-key: your_api_key_here" \
+  https://api.opendataug.com/v1/counties
 ```
 
 #### API Key Format
 
-API keys follow this format: `uk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+API keys follow this format: `opu_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
 - `uk`: Identifies our Uganda Districts API
-- `live`: Indicates whether it's a live or test key
 - Random string: Unique identifier for your API key
 
 ## Security Best Practices
@@ -50,7 +46,6 @@ To ensure secure usage of our API, follow these best practices:
 - **Use Environment Variables**: Store API keys as environment variables instead of hardcoding them
 - **Separate Keys for Different Environments**: Use different API keys for development and production
 - **Regular Rotation**: Rotate your API keys periodically for enhanced security
-- **Minimum Permissions**: Use keys with the minimum required permissions for your use case
 
 ### Code Examples
 
@@ -58,10 +53,10 @@ Here's how to properly use your API key in different programming languages:
 
 ```javascript
 const apiKey = process.env.UGANDA_API_KEY;
-fetch('https://api.example.com/v1/districts', {
-headers: {
-'Authorization': Bearer ${apiKey}
-}
+fetch("https://api.example.com/v1/districts", {
+  headers: {
+    "x-api-key": apiKey,
+  },
 });
 ```
 
@@ -70,20 +65,40 @@ Python
 ```python
 import os
 import requests
+
 api_key = os.getenv('UGANDA_API_KEY')
-headers = {'Authorization': f'Bearer {api_key}'}
+headers = {'x-api-key': api_key}
 response = requests.get('https://api.example.com/v1/districts', headers=headers)
 ```
 
 ```go
-
 import (
-"net/http"
-"os"
+    "net/http"
+    "os"
 )
+
 apiKey := os.Getenv("UGANDA_API_KEY")
 req, := http.NewRequest("GET", "https://api.example.com/v1/districts", nil)
-req.Header.Add("Authorization", "Bearer " + apiKey)
+req.Header.Add("x-api-key", apiKey)
+```
+
+PHP
+
+```php
+<?php
+$api_key = getenv('UGANDA_API_KEY');
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://api.example.com/v1/districts',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'x-api-key: ' . $api_key
+    ]
+]);
+
+$response = curl_exec($curl);
+curl_close($curl);
 ```
 
 ## Error Responses
@@ -113,15 +128,7 @@ When authentication fails, you'll receive one of these responses:
 
 API requests are rate-limited based on your API key:
 
-- Free tier: 100 requests per hour
-- Standard tier: 1,000 requests per hour
-- Premium tier: 10,000 requests per hour
-
-Rate limit headers are included in each response:
-
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 999
-X-RateLimit-Reset: 1640995200
+- Free tier: 1000 requests per hour
 
 ---
 
