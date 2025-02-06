@@ -16,6 +16,8 @@ const SetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { token } = useParams();
 
+  console.log(token);
+
   const {
     register,
     handleSubmit,
@@ -31,6 +33,7 @@ const SetPassword: React.FC = () => {
       setDisabled(true);
       const response = await fetch(`${backendUrl}/auth/set-password?token=${token}`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },

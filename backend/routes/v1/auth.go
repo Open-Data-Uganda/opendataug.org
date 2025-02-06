@@ -188,16 +188,59 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	userToken, err := h.userController.InitiatePasswordReset(payload.Email)
+	user, err := h.userController.InitiatePasswordReset(payload.Email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError(err.Error()))
+		return
+	}
+
+	baseURL := os.Getenv("BASE_URL")
+
+	claims := jwt.MapClaims{
+		"exp":         time.Now().Add(24 * time.Hour).Unix(),
+		"type":        "password_reset",
+		"user_number": user.Number,
+		"user_role":   user.Role,
+		"token_uuid":  commons.UUIDGenerator(),
+		"iat":         time.Now().UTC().Unix(),
+		"nbf":         time.Now().UTC().Unix(),
+		"iss":         baseURL,
+		"aud":         baseURL,
+	}
+
+	tx := h.db.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	privateKeyBytes, err := base64.StdEncoding.DecodeString(os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode private key"})
+		return
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse private key"})
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	userToken, err := token.SignedString(privateKey)
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate reset token"})
 		return
 	}
 
 	emailService := services.Info{
 		Email:       payload.Email,
 		Token:       userToken,
-		MailType:    "Password reset - RB Buildings CRM",
+		MailType:    "Password reset - Open Data Uganda",
 		UserName:    "",
 		CurrentYear: time.Now().Year(),
 		Type:        "password_reset",
@@ -226,6 +269,7 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 
 	claims, err := h.jwtService.ValidateToken(tokenString)
 	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Invalid token"))
 		c.Abort()
 		return
@@ -359,6 +403,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		"exp":         time.Now().Add(24 * time.Hour).Unix(),
 		"type":        "password_reset",
 		"user_number": user.Number,
+		"user_role":   user.Role,
 		"token_uuid":  commons.UUIDGenerator(),
 		"iat":         time.Now().UTC().Unix(),
 		"nbf":         time.Now().UTC().Unix(),
