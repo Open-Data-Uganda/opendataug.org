@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,7 +31,7 @@
 
 @layer base {
   body {
-    @apply relative  font-satoshi text-base font-normal text-body;
+    @apply relative text-base font-normal text-body;
   }
   .select-class {
     @apply w-full appearance-none rounded border border-gray-300 bg-transparent px-4 py-2 text-gray-700 focus:bg-white focus:outline-none;
@@ -80,17 +82,11 @@ tr:nth-child(even) {
   }
 }
 
-@font-face {
-  font-family: 'Satoshi';
-  src: url('../assets/fonts/Satoshi-Regular.otf');
-}
-
 * {
-  font-family: 'Satoshi';
-}
-
-* {
-  font-weight: 500;
+  font-family: 'Montserrat', serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .faq-item {

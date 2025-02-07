@@ -2,7 +2,6 @@ import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import UserOne from '../../assets/user-01.png';
 import { useAuth } from '../../context/AuthContext';
 import useGetRequest from '../../hooks/useGetRequest';
 
@@ -47,11 +46,14 @@ const DropdownUser = () => {
       <Link ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" to="#">
         <span className="hidden text-right text-13   lg:block">
           <span className="block text-sm font-medium capitalize text-black dark:text-white">{profile?.name}</span>
-          <span className="block text-xs">{profile?.data.email}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
+          <img
+            src={'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=100'}
+            className="rounded-full"
+            alt="User"
+          />
         </span>
 
         <svg

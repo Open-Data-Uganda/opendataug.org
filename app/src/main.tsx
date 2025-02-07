@@ -22,9 +22,7 @@ const queryClient = new QueryClient({
 });
 
 const customTheme = createTheme({
-  typography: {
-    fontFamily: '"Satoshi"'
-  }
+  typography: {}
 });
 
 const Providers = ({ children }: { children: ReactNode }) => {

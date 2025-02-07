@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import SmallHeader from '../../components/SmallHeader';
 import { useAuth } from '../../context/AuthContext';
 import { LoginSchema } from '../../types/schemas';
 
@@ -46,17 +48,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="h-screen">
-      <div className="border-b border-gray-200">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
-          <img
-            src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=900"
-            alt="Uganda Data Logo"
-            className="h-8"
-          />
-        </div>
-      </div>
+      <SmallHeader />
 
-      <div className="flex min-h-screen">
+      <div className="mx-auto flex min-h-screen justify-center">
         <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
           <div className="w-full max-w-md">
             <div className="mb-8">
@@ -98,17 +92,6 @@ const Login: React.FC = () => {
                 </Link>
               </p>
             </form>
-          </div>
-        </div>
-
-        <div className="hidden flex-col justify-between bg-gray-50 p-8 lg:flex lg:w-1/2">
-          <div className="flex flex-1 items-center justify-center">
-            {/* Add illustration showing Uganda map or data visualization */}
-          </div>
-
-          <div className="text-center">
-            <p className="mb-4 text-gray-600">Trusted by organizations across Uganda</p>
-            <div className="flex items-center justify-center space-x-8">{/* Add Ugandan partner logos here */}</div>
           </div>
         </div>
       </div>

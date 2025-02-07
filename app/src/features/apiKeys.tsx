@@ -84,7 +84,6 @@ const Overview: React.FC = () => {
     }
   };
 
-  console.log(data);
   return (
     <DefaultLayout>
       {showModal && (

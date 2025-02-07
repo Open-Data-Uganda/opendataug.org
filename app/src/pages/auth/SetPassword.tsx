@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import SmallHeader from '../../components/SmallHeader';
 import { notifyError, notifySuccess } from '../../components/toasts';
 import { backendUrl } from '../../config';
 import { SetPasswordSchema } from '../../types/schemas';
@@ -62,21 +63,13 @@ const SetPassword: React.FC = () => {
 
   return (
     <div className="h-screen">
-      <div className="border-b border-gray-200">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
-          <img
-            src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=900"
-            alt="Uganda Data Logo"
-            className="h-8"
-          />
-        </div>
-      </div>
+      <SmallHeader />
 
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen justify-center">
         <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
           <div className="w-full max-w-md">
             <div className="mb-8">
-              <h1 className="mb-2 text-2xl font-bold">Create New Password</h1>
+              <h1 className="mb-2 text-lg font-bold">Create New Password</h1>
               <p className="text-gray-600">
                 Please choose a strong password to secure your account. Make sure it's at least 8 characters long.
               </p>
@@ -166,23 +159,6 @@ const SetPassword: React.FC = () => {
                 </p>
               </div>
             </form>
-          </div>
-        </div>
-
-        <div className="hidden flex-col justify-between bg-gray-50 p-8 lg:flex lg:w-1/2">
-          <div className="flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Secure Your Account</h2>
-              <p className="mt-4 text-lg text-gray-600">
-                Creating a strong password is an important step in protecting your data and maintaining secure access to
-                Uganda's comprehensive database.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <p className="mb-4 text-gray-600">Trusted by organizations across Uganda</p>
-            <div className="flex items-center justify-center space-x-8">{/* Partner logos remain unchanged */}</div>
           </div>
         </div>
       </div>

@@ -3,15 +3,14 @@ import type { Config } from "@docusaurus/types";
 import { themes as prismThemes } from "prism-react-renderer";
 
 const config: Config = {
-  title: "My Site",
+  title: "Open Data Uganda | API Documentation",
   tagline: "Dinosaurs are cool",
   favicon: "img/favicon.ico",
 
-  url: "https://your-docusaurus-site.example.com",
+  url: "https://docs.opendataug.org",
   baseUrl: "/",
 
-  organizationName: "facebook",
-  projectName: "docusaurus",
+  organizationName: "Open Data Uganda",
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -45,8 +44,8 @@ const config: Config = {
     },
     navbar: {
       logo: {
-        alt: "My Site Logo",
-        src: "img/logo.svg",
+        alt: "Open Data Uganda Logo",
+        src: "img/logo.png",
       },
       items: [
         {

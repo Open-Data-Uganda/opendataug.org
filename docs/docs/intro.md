@@ -3,13 +3,13 @@ slug: /
 sidebar_position: 1
 ---
 
-# Uganda Geospatial API
+# Administrative Units API
 
 Access comprehensive data about Uganda's districts, villages, and administrative units through a simple API.
 
 ## Overview
 
-The **Uganda Geospatial API** provides developers with programmatic access to detailed information about Uganda's administrative divisions and geographical data. Whether you're building applications for local governance, analyzing demographic patterns, or developing location-based services, our API delivers accurate and up-to-date data about Uganda's geography.
+The **Administrative Units API** provides developers with programmatic access to detailed information about Uganda's administrative divisions and geographical data. Whether you're building applications for local governance, analyzing demographic patterns, or developing location-based services, our API delivers accurate and up-to-date data about Uganda's geography.
 
 ## Key Features
 
@@ -23,7 +23,7 @@ Access reliable data about:
 
 ## Quick Start
 
-1. **Sign up** - Create an account to get your API key
+1. **Sign up** - Create an account to get your API key [https://app.opendataug.org/](https://app.opendataug.org/)
 2. **Authentication** - Add your API key to request headers
 3. **Make requests** - Start querying our endpoints
 4. **Handle responses** - Process returned JSON data
