@@ -29,8 +29,6 @@ func (info Info) SendEmail() error {
 		templateUrl = "./templates/invitation.html"
 	} else if info.Type == "password_reset" {
 		templateUrl = "./templates/reset_password.html"
-	} else if info.Type == "quotation" {
-		templateUrl = "./templates/quotation.html"
 	} else {
 		templateUrl = "./templates/reset_password.html"
 	}
