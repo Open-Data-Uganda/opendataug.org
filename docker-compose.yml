@@ -17,6 +17,8 @@ services:
       - "5173:80"
     depends_on:
       - backend
+    env_file:
+      - ./app/.env
     restart: unless-stopped
 
   docs:
