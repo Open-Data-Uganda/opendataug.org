@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -12,12 +12,11 @@ import { SetPasswordSchema } from '../../types/schemas';
 type Inputs = z.infer<typeof SetPasswordSchema>;
 
 const SetPassword: React.FC = () => {
+  const navigate = useNavigate();
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-
-  console.log(token);
 
   const {
     register,
@@ -34,7 +33,6 @@ const SetPassword: React.FC = () => {
       setDisabled(true);
       const response = await fetch(`${backendUrl}/auth/set-password?token=${token}`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -48,6 +46,7 @@ const SetPassword: React.FC = () => {
         setDisabled(false);
         notifySuccess('A password has been set. You can now sign in.');
         reset();
+        navigate('/login');
       } else {
         const errorData = await response.json();
         notifyError(errorData.message || 'An error occurred while setting the password.');

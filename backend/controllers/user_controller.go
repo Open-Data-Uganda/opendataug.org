@@ -165,7 +165,7 @@ func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmP
 
 	reset, err := c.FindPasswordResetByToken(token)
 	if err != nil {
-		return fmt.Errorf("invalid or expired reset token: %s", token)
+		return fmt.Errorf("Password reset link has expired")
 	}
 
 	if userNumber != reset.UserNumber {
@@ -173,7 +173,7 @@ func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmP
 	}
 
 	if reset.Status != "ACTIVE" {
-		return fmt.Errorf("reset token is not active")
+		return fmt.Errorf("Password reset link has expired")
 	}
 
 	hashedPassword, err := commons.HashPassword(newPassword)
@@ -185,7 +185,7 @@ func (c *UserController) SetNewPassword(token, userNumber, newPassword, confirmP
 
 	if err := tx.Model(&models.User{}).Where("number = ?", reset.UserNumber).Update("status", "ACTIVE").Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to activate user account: %w", err)
+		return fmt.Errorf("Failed to activate user account")
 	}
 
 	if err := c.ExecutePasswordReset(tx, reset.UserNumber, hashedPassword); err != nil {
