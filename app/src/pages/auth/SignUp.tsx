@@ -34,6 +34,8 @@ const SignUp: React.FC = () => {
     resolver: zodResolver(SignUpSchema)
   });
 
+  console.log('backend url', backendUrl);
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     setDisabled(true);
