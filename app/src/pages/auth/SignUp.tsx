@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+
+import Kids from '../../assets/kids.jpg';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { notifyError, notifySuccess } from '../../components/toasts';
@@ -158,9 +160,9 @@ const SignUp: React.FC = () => {
         </div>
 
         {/* Right side - Illustration and partners */}
-        <div className="hidden flex-col justify-between bg-gray-50 p-8 lg:flex lg:w-1/2">
+        <div className="  flex-col justify-between bg-gray-50 p-8 lg:flex lg:w-1/2">
           <div className="flex flex-1 items-center justify-center">
-            {/* Add illustration showing Uganda map or data visualization */}
+            <img loading="lazy" src={Kids} alt="image of school kids" />
           </div>
         </div>
       </div>
