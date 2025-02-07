@@ -60,17 +60,18 @@ fetch("https://api.example.com/v1/districts", {
 });
 ```
 
-Python
+**Python**
 
-```python
+````python
 import os
 import requests
 
 api_key = os.getenv('UGANDA_API_KEY')
 headers = {'x-api-key': api_key}
 response = requests.get('https://api.example.com/v1/districts', headers=headers)
-```
 
+
+**Go**
 ```go
 import (
     "net/http"
@@ -80,9 +81,9 @@ import (
 apiKey := os.Getenv("UGANDA_API_KEY")
 req, := http.NewRequest("GET", "https://api.example.com/v1/districts", nil)
 req.Header.Add("x-api-key", apiKey)
-```
+````
 
-PHP
+**PHP**
 
 ```php
 <?php

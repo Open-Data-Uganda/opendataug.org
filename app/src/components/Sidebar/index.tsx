@@ -2,6 +2,8 @@ import { UsersIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
+import Logo from '../../assets/logo.png';
+
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -57,11 +59,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       }`}>
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <NavLink to="/">
-          <img
-            src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-            className=" h-8"
-            alt="Logo"
-          />
+          <img src={Logo} className="h-8 lg:h-10" alt="Logo" />
         </NavLink>
 
         <button
@@ -92,9 +90,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <li>
                 <NavLink
                   to="/dashboard"
-                  className={`group relative flex items-center gap-2.5 rounded px-4 py-2.5 font-medium  duration-300 ease-in-out hover:bg-primary hover:text-white ${
-                    pathname.includes('api-keys') && 'bg-primary text-white'
-                  }`}>
+                  className="group relative flex items-center gap-2.5 rounded px-4 py-2.5 font-medium  duration-300 ease-in-out">
                   <UsersIcon className="h-5" />
                   API Keys
                 </NavLink>
