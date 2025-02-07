@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -14,7 +14,8 @@ type Inputs = z.infer<typeof SetPasswordSchema>;
 const SetPassword: React.FC = () => {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
   console.log(token);
 
