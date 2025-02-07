@@ -36,7 +36,7 @@ const App = () => {
         <Route path="/" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route
-          path="/set-password/"
+          path="/set-password"
           element={
             <>
               <PageTitle title="Set Password | Uganda Open Data" />
