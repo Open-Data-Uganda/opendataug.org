@@ -97,7 +97,7 @@ func (c *UserController) SavePasswordReset(reset *models.PasswordReset) error {
 func (c *UserController) FindPasswordResetByToken(token string) (*models.PasswordReset, error) {
 	var reset models.PasswordReset
 	if err := c.db.DB.Where("token = ?", token).First(&reset).Error; err != nil {
-		return nil, fmt.Errorf("reset token not found: %w", err)
+		return nil, fmt.Errorf("reset token not found")
 	}
 	return &reset, nil
 }

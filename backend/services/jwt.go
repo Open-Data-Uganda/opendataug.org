@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"gorm.io/gorm"
 	"opendataug.org/commons"
 )
 
@@ -192,4 +193,33 @@ func (s *JWTService) ExtractTokenFromHeader(authHeader string) (string, error) {
 	}
 
 	return parts[1], nil
+}
+
+func (s *JWTService) GenerateTokenWithClaims(claims jwt.MapClaims, tx *gorm.DB) (string, error) {
+	privateKeyBytes, err := base64.StdEncoding.DecodeString(os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	if err != nil {
+		if tx != nil {
+			tx.Rollback()
+		}
+		return "", fmt.Errorf("failed to decode private key: %w", err)
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
+	if err != nil {
+		if tx != nil {
+			tx.Rollback()
+		}
+		return "", fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedToken, err := token.SignedString(privateKey)
+	if err != nil {
+		if tx != nil {
+			tx.Rollback()
+		}
+		return "", fmt.Errorf("failed to sign token: %w", err)
+	}
+
+	return signedToken, nil
 }
