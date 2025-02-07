@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"encoding/base64"
-
 	"errors"
 
 	"github.com/badoux/checkmail"
@@ -194,8 +192,14 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	baseURL := os.Getenv("BASE_URL")
+	tx := h.db.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
+	baseURL := os.Getenv("BASE_URL")
 	claims := jwt.MapClaims{
 		"exp":         time.Now().Add(24 * time.Hour).Unix(),
 		"type":        "password_reset",
@@ -208,32 +212,22 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		"aud":         baseURL,
 	}
 
-	tx := h.db.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	privateKeyBytes, err := base64.StdEncoding.DecodeString(os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	userToken, err := h.jwtService.GenerateTokenWithClaims(claims, tx)
 	if err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode private key"})
-		return
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
-	if err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse private key"})
-		return
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	userToken, err := token.SignedString(privateKey)
-	if err != nil {
-		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate reset token"})
+		return
+	}
+
+	saveUserPasswordToken := models.PasswordReset{
+		Number:     commons.UUIDGenerator(),
+		UserNumber: user.Number,
+		Token:      userToken,
+		Status:     "ACTIVE",
+	}
+
+	if err := tx.Create(&saveUserPasswordToken).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, customerrors.NewDatabaseError("Failed to save user password token"))
 		return
 	}
 
@@ -247,7 +241,14 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	}
 
 	if err := emailService.SendEmail(); err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusBadRequest, customerrors.NewInternalError("Failed to send email"))
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, customerrors.NewDatabaseError("Failed to complete password reset"))
 		return
 	}
 
@@ -411,24 +412,8 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		"aud":         baseURL,
 	}
 
-	privateKeyBytes, err := base64.StdEncoding.DecodeString(os.Getenv("ACCESS_TOKEN_PRIVATE_KEY"))
+	userToken, err := h.jwtService.GenerateTokenWithClaims(claims, tx)
 	if err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to decode private key"})
-		return
-	}
-
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyBytes)
-	if err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to parse private key"})
-		return
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	userToken, err := token.SignedString(privateKey)
-	if err != nil {
-		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate reset token"})
 		return
 	}

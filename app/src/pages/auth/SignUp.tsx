@@ -36,8 +36,6 @@ const SignUp: React.FC = () => {
     resolver: zodResolver(SignUpSchema)
   });
 
-  console.log('backend url', backendUrl);
-
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     setLoading(true);
     setDisabled(true);
@@ -63,7 +61,6 @@ const SignUp: React.FC = () => {
 
       notifySuccess('Sign up successful! Please check your email to verify your account.');
       reset();
-      navigate('/login');
     } catch (error) {
       notifyError((error as Error).message);
     } finally {
