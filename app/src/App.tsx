@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import LoadingSpinner from './components/LoadingSpinner';
+import PageTitle from './components/PageTitle';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { FallbackProvider } from './composables/FallbackProvider';
 import Overview from './features/apiKeys';
@@ -34,7 +35,15 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/set-password/:token" element={<SetPassword />} />
+        <Route
+          path="/set-password/:token"
+          element={
+            <>
+              <PageTitle title="Set Password | Uganda Open Data" />
+              <SetPassword />
+            </>
+          }
+        />
         <Route path="*" element={<PageNotFound />} />
 
         <Route element={<ProtectedRoute />}>
