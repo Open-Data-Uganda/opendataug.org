@@ -10,15 +10,18 @@ services:
   app:
     build:
       context: ./app
+      env_file:
+        - ./app/.env
       dockerfile: Dockerfile
+      args:
+        - VITE_BASE_URL=${VITE_BASE_URL}
     environment:
+      VITE_BASE_URL: ${VITE_BASE_URL}
       NODE_ENV: production
     ports:
       - "5173:80"
     depends_on:
       - backend
-    env_file:
-      - ./app/.env
     restart: unless-stopped
 
   docs:
