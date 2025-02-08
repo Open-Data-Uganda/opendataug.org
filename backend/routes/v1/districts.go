@@ -46,33 +46,36 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 }
 
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
-	var payload models.District
+	var payload []models.District
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.Error(customerrors.NewValidationError("Invalid request payload", err.Error()))
 		return
 	}
 
-	district := models.District{
-		Number:       commons.UUIDGenerator(),
-		Name:         payload.Name,
-		RegionNumber: payload.RegionNumber,
-		Size:         payload.Size,
-		TownStatus:   payload.TownStatus,
+	districts := make([]models.District, len(payload))
+	for i, p := range payload {
+		districts[i] = models.District{
+			Number:       commons.UUIDGenerator(),
+			Name:         p.Name,
+			RegionNumber: p.RegionNumber,
+			TownStatus:   p.TownStatus,
+		}
+
+		// Validate region exists
+		var region models.Region
+		if err := h.db.DB.First(&region, "number = ?", p.RegionNumber).Error; err != nil {
+			c.Error(customerrors.NewValidationError("Invalid region number", nil))
+			return
+		}
 	}
 
-	var region models.Region
-	if err := h.db.DB.First(&region, "number = ?", payload.RegionNumber).Error; err != nil {
-		c.Error(customerrors.NewValidationError("Invalid region number", nil))
-		return
-	}
-
-	if err := h.db.DB.Create(&district).Error; err != nil {
-		c.Error(customerrors.NewDatabaseError("Failed to create district"))
+	if err := h.db.DB.Create(&districts).Error; err != nil {
+		c.Error(customerrors.NewDatabaseError("Failed to create districts"))
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "District created successfully",
+		"message": "Districts created successfully",
 	})
 }
 
@@ -93,7 +96,6 @@ func (h *DistrictHandler) handleAllDistricts(c *gin.Context) {
 		response[i] = models.DistrictResponse{
 			ID:         district.Number,
 			Name:       district.Name,
-			Size:       district.Size,
 			TownStatus: district.TownStatus,
 			RegionID:   district.RegionNumber,
 			RegionName: district.Region.Name,
@@ -126,7 +128,6 @@ func (h *DistrictHandler) handleDistrictByNumber(c *gin.Context) {
 	response := models.DistrictResponse{
 		ID:         district.Number,
 		Name:       district.Name,
-		Size:       district.Size,
 		TownStatus: district.TownStatus,
 		RegionID:   district.RegionNumber,
 		RegionName: district.Region.Name,
@@ -154,7 +155,6 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 	response := models.DistrictResponse{
 		ID:         district.Number,
 		Name:       district.Name,
-		Size:       district.Size,
 		TownStatus: district.TownStatus,
 		RegionID:   district.RegionNumber,
 		RegionName: district.Region.Name,
