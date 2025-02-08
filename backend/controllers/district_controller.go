@@ -45,7 +45,6 @@ func (dc *DistrictController) CreateDistrict(c *gin.Context) {
 	district := models.District{
 		Number:       payload.Number,
 		Name:         payload.Name,
-		Size:         payload.Size,
 		TownStatus:   payload.TownStatus,
 		RegionNumber: payload.RegionNumber,
 	}

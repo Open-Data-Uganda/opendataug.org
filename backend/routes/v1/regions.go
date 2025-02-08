@@ -191,7 +191,6 @@ func (h *RegionHandler) getDistricts(c *gin.Context) {
 		districts = append(districts, models.DistrictResponse{
 			ID:         district.Number,
 			Name:       district.Name,
-			Size:       district.Size,
 			TownStatus: district.TownStatus,
 			RegionID:   district.RegionNumber,
 			RegionName: district.Region.Name,
