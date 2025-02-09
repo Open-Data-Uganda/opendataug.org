@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
 	"opendataug.org/database"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -42,16 +43,22 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 }
 
 func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	var payload models.SubCounty
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
 		return
 	}
 
 	var existingSubcounty models.SubCounty
 	if err := h.db.DB.Where("name = ? AND county_number = ?", payload.Name, payload.CountyNumber).
 		First(&existingSubcounty).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Subcounty with this name already exists in this county"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Subcounty with this name already exists in this county"))
 		return
 	}
 
@@ -62,7 +69,7 @@ func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -77,7 +84,7 @@ func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
 		Offset((pagination.Page - 1) * pagination.Limit).
 		Limit(pagination.Limit).
 		Find(&subcounties).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -90,7 +97,7 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 	var subcounty models.SubCounty
 	if err := h.db.DB.Preload("Parishes").
 		First(&subcounty, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Sub county not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Sub county not found"))
 		return
 	}
 
@@ -98,17 +105,23 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 }
 
 func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	number := c.Param("id")
 
 	var subcounty models.SubCounty
 	if err := h.db.DB.First(&subcounty, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Sub county not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Sub county not found"))
 		return
 	}
 
 	var payload models.SubCounty
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
 		return
 	}
 
@@ -116,38 +129,45 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	subcounty.CountyNumber = payload.CountyNumber
 
 	if err := h.db.DB.Save(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Subcounty updated successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Subcounty updated successfully"})
 }
 
 func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	number := c.Param("id")
+	if number == "" {
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("ID is required"))
+		return
+	}
+	number = commons.Sanitize(number)
 
 	var subcounty models.SubCounty
 	if err := h.db.DB.First(&subcounty, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Subcounty not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Subcounty not found"))
 		return
 	}
 
 	if err := h.db.DB.Delete(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Subcounty deleted successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Subcounty deleted successfully"})
 }
 
 func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Number is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Number is required"))
 		return
 	}
 
@@ -156,7 +176,7 @@ func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	var parishes []models.Parish
 	if err := h.db.DB.Where("sub_county_number = ?", number).
 		Find(&parishes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 

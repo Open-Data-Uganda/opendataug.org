@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"opendataug.org/commons"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
+	customerrors "opendataug.org/errors"
 )
 
 type VillageHandler struct {
@@ -39,6 +41,12 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHan
 }
 
 func (h *VillageHandler) createVillage(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	if err := h.controller.CreateVillage(c); err != nil {
 		c.Error(err)
 		return
@@ -50,6 +58,12 @@ func (h *VillageHandler) createVillage(c *gin.Context) {
 }
 
 func (h *VillageHandler) updateVillage(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	if err := h.controller.UpdateVillage(c); err != nil {
 		c.Error(err)
 		return
@@ -61,6 +75,12 @@ func (h *VillageHandler) updateVillage(c *gin.Context) {
 }
 
 func (h *VillageHandler) deleteVillage(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	if err := h.controller.DeleteVillage(c); err != nil {
 		c.Error(err)
 		return

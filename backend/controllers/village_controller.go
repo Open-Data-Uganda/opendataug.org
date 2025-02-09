@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"opendataug.org/commons"
 	"opendataug.org/database"
 	"opendataug.org/errors"
@@ -26,7 +27,7 @@ func (c *VillageController) CreateVillage(ctx *gin.Context) error {
 
 	var parish models.Parish
 	if err := c.db.DB.First(&parish, "number = ?", payload.ParishNumber).Error; err != nil {
-		return errors.NewBadRequestError("Invalid parish number - parish does not exist")
+		return errors.NewNotFoundError("Parish not found")
 	}
 
 	var existingVillage models.Village
@@ -42,7 +43,7 @@ func (c *VillageController) CreateVillage(ctx *gin.Context) error {
 	}
 
 	if err := c.db.DB.Create(&village).Error; err != nil {
-		return errors.NewDatabaseError(err.Error())
+		return errors.NewDatabaseError("Database level error occured")
 	}
 
 	return nil
@@ -65,7 +66,7 @@ func (c *VillageController) UpdateVillage(ctx *gin.Context) error {
 	village.ParishNumber = payload.ParishNumber
 
 	if err := c.db.DB.Save(&village).Error; err != nil {
-		return errors.NewDatabaseError(err.Error())
+		return errors.NewDatabaseError("Database level error occured")
 	}
 
 	return nil
@@ -80,7 +81,7 @@ func (c *VillageController) DeleteVillage(ctx *gin.Context) error {
 	}
 
 	if err := c.db.DB.Delete(&village).Error; err != nil {
-		return errors.NewDatabaseError(err.Error())
+		return errors.NewDatabaseError("Database level error occured")
 	}
 
 	return nil
@@ -90,8 +91,10 @@ func (c *VillageController) GetAllVillages(ctx *gin.Context) ([]models.Village, 
 	pagination := commons.GetPaginationParams(ctx)
 
 	var villages []models.Village
-	if err := c.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&villages).Error; err != nil {
-		return nil, errors.NewDatabaseError(err.Error())
+	if err := c.db.DB.Offset((pagination.Page - 1) * pagination.Limit).
+		Limit(pagination.Limit).
+		Find(&villages).Error; err != nil {
+		return nil, errors.NewDatabaseError("Database level error occured")
 	}
 
 	return villages, nil
@@ -99,6 +102,9 @@ func (c *VillageController) GetAllVillages(ctx *gin.Context) ([]models.Village, 
 
 func (c *VillageController) GetVillage(ctx *gin.Context) (*models.Village, error) {
 	id := ctx.Param("id")
+	if id == "" {
+		return nil, errors.NewBadRequestError("Village ID is required")
+	}
 
 	var village models.Village
 	if err := c.db.DB.First(&village, "number = ?", id).Error; err != nil {
@@ -106,4 +112,8 @@ func (c *VillageController) GetVillage(ctx *gin.Context) (*models.Village, error
 	}
 
 	return &village, nil
+}
+
+func (c *VillageController) GetDB() *gorm.DB {
+	return c.db.DB
 }

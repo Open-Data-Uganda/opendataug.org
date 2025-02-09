@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
 	"opendataug.org/database"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -45,7 +46,7 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 
 	var regions []models.Region
 	if err := h.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&regions).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -63,14 +64,14 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid region id"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Invalid region id"))
 		return
 	}
 	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Region not found"))
 		return
 	}
 
@@ -83,15 +84,21 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) createRegion(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
 		return
 	}
 
 	var existingRegion models.Region
 	if err := h.db.DB.Where("name = ?", payload.Name).First(&existingRegion).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region with this name already exists"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Region with this name already exists"))
 		return
 	}
 
@@ -101,7 +108,7 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -111,9 +118,15 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) updateRegion(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region id is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Region id is required"))
 		return
 	}
 
@@ -121,26 +134,26 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Region not found"))
 		return
 	}
 
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
 		return
 	}
 
 	var existingRegion models.Region
 	if err := h.db.DB.Where("name = ? AND number != ?", payload.Name, number).First(&existingRegion).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region with this name already exists"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Region with this name already exists"))
 		return
 	}
 
 	region.Name = payload.Name
 
 	if err := h.db.DB.Save(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -150,9 +163,15 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 }
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region id is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Region id is required"))
 		return
 	}
 
@@ -160,12 +179,12 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 
 	var region models.Region
 	if err := h.db.DB.First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Region not found"))
 		return
 	}
 
 	if err := h.db.DB.Delete(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -175,14 +194,14 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 func (h *RegionHandler) getDistricts(c *gin.Context) {
 	number := c.Param("id")
 	if number == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Region number is required"})
+		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Region number is required"))
 		return
 	}
 	number = commons.Sanitize(number)
 
 	var region models.Region
 	if err := h.db.DB.Preload("Districts").First(&region, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Region not found"})
+		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Region not found"))
 		return
 	}
 
