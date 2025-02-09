@@ -46,36 +46,38 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 }
 
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
-	var payload []models.District
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
+	var payload models.District
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.Error(customerrors.NewValidationError("Invalid request payload", err.Error()))
 		return
 	}
 
-	districts := make([]models.District, len(payload))
-	for i, p := range payload {
-		districts[i] = models.District{
-			Number:       commons.UUIDGenerator(),
-			Name:         p.Name,
-			RegionNumber: p.RegionNumber,
-			TownStatus:   p.TownStatus,
-		}
-
-		// Validate region exists
-		var region models.Region
-		if err := h.db.DB.First(&region, "number = ?", p.RegionNumber).Error; err != nil {
-			c.Error(customerrors.NewValidationError("Invalid region number", nil))
-			return
-		}
+	district := models.District{
+		Number:       commons.UUIDGenerator(),
+		Name:         payload.Name,
+		RegionNumber: payload.RegionNumber,
+		TownStatus:   payload.TownStatus,
 	}
 
-	if err := h.db.DB.Create(&districts).Error; err != nil {
-		c.Error(customerrors.NewDatabaseError("Failed to create districts"))
+	var region models.Region
+	if err := h.db.DB.First(&region, "number = ?", payload.RegionNumber).Error; err != nil {
+		c.Error(customerrors.NewValidationError("Invalid region number", nil))
+		return
+	}
+
+	if err := h.db.DB.Create(&district).Error; err != nil {
+		c.Error(customerrors.NewDatabaseError("Failed to create district"))
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Districts created successfully",
+		"message": "District created successfully",
 	})
 }
 
@@ -164,6 +166,12 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 }
 
 func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	districtNumber := c.Param("id")
 	if districtNumber == "" {
 		c.Error(customerrors.NewBadRequestError("District number is required"))

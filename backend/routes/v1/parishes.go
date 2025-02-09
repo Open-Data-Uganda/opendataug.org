@@ -45,6 +45,12 @@ func (h *ParishHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 }
 
 func (h *ParishHandler) createParish(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	var payload models.Parish
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
@@ -65,7 +71,7 @@ func (h *ParishHandler) createParish(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&parish).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -101,7 +107,7 @@ func (h *ParishHandler) handleParish(c *gin.Context) {
 			c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Parish not found"))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -114,6 +120,12 @@ func (h *ParishHandler) handleParish(c *gin.Context) {
 }
 
 func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	parishNumber := c.Param("id")
 
 	var payload models.Parish
@@ -128,14 +140,14 @@ func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
 			c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Parish not found"))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
 	parish.Name = payload.Name
 
 	if err := h.db.DB.Save(&parish).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -145,6 +157,12 @@ func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
 }
 
 func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
+	user, _ := commons.GetUserFromHeader(c, h.db.DB)
+	if user.Role != "ADMIN" && !user.IsAdmin {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
 	parishNumber := c.Param("id")
 
 	var parish models.District
@@ -153,12 +171,12 @@ func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
 			c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Parish not found"))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
 	if err := h.db.DB.Delete(&parish).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
@@ -182,7 +200,7 @@ func (h *ParishHandler) handleParishVillages(c *gin.Context) {
 			c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("Parish not found"))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError(err.Error()))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
 		return
 	}
 
