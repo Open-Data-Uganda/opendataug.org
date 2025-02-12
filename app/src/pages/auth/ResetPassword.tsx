@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, useParams } from 'react-router-dom';
 import { z } from 'zod';
+
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import SmallHeader from '../../components/SmallHeader';
 import { notifyError, notifySuccess } from '../../components/toasts';
 import { backendUrl } from '../../config';
 import { ResetPasswordSchema } from '../../types/schemas';
+
 type Inputs = z.infer<typeof ResetPasswordSchema>;
 
 const ResetPassword: React.FC = () => {
