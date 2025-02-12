@@ -34,7 +34,10 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	}))
 
 	v1Group := router.Group("/v1")
-	// v1Group.Use(middleware.RateLimit(1000, time.Hour, 1))
+	if os.Getenv("ENVIRONMENT") == "prod" {
+		v1Group.Use(middleware.RateLimit(1000, time.Hour, 1))
+	}
+
 	v1Group.Use(middleware.TimeoutMiddleware(5 * time.Second))
 
 	{
