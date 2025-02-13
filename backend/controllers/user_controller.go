@@ -139,7 +139,7 @@ func (c *UserController) AuthenticateUser(email, password string) (*models.User,
 	}
 
 	if _, err := commons.ComparePassword(userPassword.UserPassword, password); err != nil {
-		return nil, fmt.Errorf("invalid credentials")
+		return nil, fmt.Errorf("Invalid password or email address")
 	}
 
 	return user, nil
