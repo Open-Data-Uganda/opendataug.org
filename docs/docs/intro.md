@@ -33,7 +33,7 @@ Access reliable data about:
 ```bash
 # Fetch all districts
 curl -X GET https://api.opendataug.com/v1/districts \
-  -H "x-api-key: Bearer YOUR_API_KEY"
+  -H "x-api-key: YOUR_API_KEY"
 ```
 
 ## Next Steps
