@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
+	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
 )
 
@@ -18,7 +19,7 @@ func UUIDGenerator() string {
 }
 
 func RouteNotFound(c *gin.Context) {
-	c.JSON(http.StatusNotFound, gin.H{"message": "You need to specify an end point"})
+	c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("You need to specify a resource"))
 }
 
 func ComparePassword(hashedPassword, password string) (bool, error) {
