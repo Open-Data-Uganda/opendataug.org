@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"opendataug.org/commons"
 	"opendataug.org/database"
 	"opendataug.org/middleware"
 	v1 "opendataug.org/routes/v1"
@@ -26,12 +27,14 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:              []string{"http://localhost:3000", "http://localhost:5173", "https://app.opendataug.org"},
 		AllowMethods:              []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:              []string{"Origin", "Content-Type", "Accept", "Authorization", "X-API-Key", "User-Number"},
+		AllowHeaders:              []string{"Origin", "Content-Type", "Accept", "Authorization", "x-api-key", "User-Number"},
 		ExposeHeaders:             []string{"Content-Length", "Set-Cookie"},
 		AllowCredentials:          true,
 		OptionsResponseStatusCode: 200,
 		MaxAge:                    12 * time.Hour,
 	}))
+
+	router.NoRoute(commons.RouteNotFound)
 
 	v1Group := router.Group("/v1")
 	if os.Getenv("ENVIRONMENT") == "prod" {

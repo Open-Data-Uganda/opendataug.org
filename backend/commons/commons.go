@@ -2,6 +2,7 @@ package commons
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/alexedwards/argon2id"
@@ -14,6 +15,10 @@ import (
 func UUIDGenerator() string {
 	u := uuid.NewV4().String()
 	return strings.ReplaceAll(u, "-", "")
+}
+
+func RouteNotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, gin.H{"message": "You need to specify and end point"})
 }
 
 func ComparePassword(hashedPassword, password string) (bool, error) {
