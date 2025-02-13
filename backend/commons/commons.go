@@ -18,7 +18,7 @@ func UUIDGenerator() string {
 }
 
 func RouteNotFound(c *gin.Context) {
-	c.JSON(http.StatusNotFound, gin.H{"message": "You need to specify and end point"})
+	c.JSON(http.StatusNotFound, gin.H{"message": "You need to specify an end point"})
 }
 
 func ComparePassword(hashedPassword, password string) (bool, error) {
