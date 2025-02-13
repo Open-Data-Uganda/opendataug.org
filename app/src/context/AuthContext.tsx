@@ -88,8 +88,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUserNumber(data.user_number);
       setUserRole(data.role);
       setAccessToken(data.access_token);
-    } catch (error) {
-      notifyError('An error occurred');
+    } catch (error: any) {
+      notifyError(error.message);
       throw error;
     } finally {
       setIsLoading(false);

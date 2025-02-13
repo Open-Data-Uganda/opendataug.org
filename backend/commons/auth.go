@@ -4,9 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	"net/mail"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -35,32 +33,6 @@ type TokenDetails struct {
 	RefreshToken          *string
 	AccessTokenExpiresIn  *int64
 	RefreshTokenExpiresIn *int64
-}
-
-func (s *AuthService) AuthenticateUser(email, password string) (*models.User, error) {
-	if _, err := mail.ParseAddress(email); err != nil {
-		return nil, fmt.Errorf("invalid email address")
-	}
-
-	var user models.User
-	if err := s.db.Where("email = ?", strings.ToLower(email)).First(&user).Error; err != nil {
-		return nil, err
-	}
-
-	if user.Status != "ACTIVE" {
-		return nil, fmt.Errorf("account is not active")
-	}
-
-	var userPassword models.UserPassword
-	if err := s.db.Where("user_number = ?", user.Number).First(&userPassword).Error; err != nil {
-		return nil, fmt.Errorf("password not set")
-	}
-
-	if _, err := ComparePassword(userPassword.UserPassword, password); err != nil {
-		return nil, fmt.Errorf("invalid credentials")
-	}
-
-	return &user, nil
 }
 
 func (s *AuthService) CreateLoginSession(user *models.User) (*LoginResponse, *TokenDetails, error) {
