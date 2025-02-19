@@ -74,7 +74,7 @@
 					>
 						<div class="flex items-center justify-between">
 							<a href="/" class="-m-1.5 p-1.5">
-								<span class="sr-only">Your Company</span>
+								<span class="sr-only">Open Data Uganda</span>
 								<img
 									alt=""
 									src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
@@ -112,7 +112,7 @@
 								</div>
 								<div class="py-6">
 									<a
-										href="/login"
+										href="https://app.opendataug.org/login"
 										class="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
 									>
 										Log in
