@@ -37,11 +37,11 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	router.NoRoute(commons.RouteNotFound)
 
 	v1Group := router.Group("/v1")
-	if os.Getenv("ENVIRONMENT") == "prod" {
-		v1Group.Use(middleware.RateLimit(1000, time.Hour, 1))
-	}
+	// if os.Getenv("ENVIRONMENT") == "prod" {
+	// 	v1Group.Use(middleware.RateLimit(1000, time.Hour, 1))
+	// }
 
-	v1Group.Use(middleware.TimeoutMiddleware(5 * time.Second))
+	v1Group.Use(middleware.TimeoutMiddleware(30 * time.Second))
 
 	{
 		// Public routes
