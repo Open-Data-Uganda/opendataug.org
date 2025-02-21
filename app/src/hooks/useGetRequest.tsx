@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { notifyError } from '../components/toasts';
 import { backendUrl } from '../config';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,9 +37,9 @@ const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
         return response.data;
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-          throw new Error(error.response.data.message || 'An error occurred while fetching data.');
+          notifyError("An error occurred while fetching data")
         } else {
-          throw new Error('An error occurred while fetching data.');
+          notifyError("An error occurred while fetching data")
         }
       }
     }
