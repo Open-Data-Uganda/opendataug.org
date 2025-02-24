@@ -13,7 +13,7 @@
 				Access Uganda's Geographic Data with Ease
 			</h1>
 
-			<div class="flex flex-row gap-8">
+			<div class="flex flex-col gap-8 md:flex-row">
 				<FeatureCard
 					icon="verify"
 					title="Comprehensive Coverage"
