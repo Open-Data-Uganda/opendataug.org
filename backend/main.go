@@ -31,7 +31,7 @@ func main() {
 
 	router := routes.SetupRouter(db)
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "8080"
 	}
