@@ -30,7 +30,7 @@ func SetupRouter(db *database.Database) *gin.Engine {
 		AllowHeaders:              []string{"Origin", "Content-Type", "Accept", "Authorization", "x-api-key", "User-Number"},
 		ExposeHeaders:             []string{"Content-Length", "Set-Cookie"},
 		AllowCredentials:          true,
-		OptionsResponseStatusCode: 200,
+		OptionsResponseStatusCode: 204,
 		MaxAge:                    12 * time.Hour,
 	}))
 
