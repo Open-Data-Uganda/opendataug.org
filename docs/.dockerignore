@@ -1,6 +1,0 @@
-node_modules
-.docusaurus
-build
-.git
-.env 
-build

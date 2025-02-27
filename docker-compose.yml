@@ -1,12 +1,4 @@
 services:
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
-
   app:
     build:
       context: ./app
@@ -23,15 +15,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-
-  docs:
-    build:
-      context: ./docs
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    restart: unless-stopped
-
   backend:
     build:
       context: ./backend
