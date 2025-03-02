@@ -113,7 +113,7 @@ const Overview: React.FC = () => {
 
                 {data?.map((api_key: APIKey) => (
                   <tr key={api_key.id}>
-                    <TableData> Deploy</TableData>
+                    <TableData> { api_key.name}</TableData>
                     <TableData>
                       <div className="flex items-center gap-2">
                         <button
