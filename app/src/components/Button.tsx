@@ -2,19 +2,21 @@ import { forwardRef } from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
   fullWidth?: boolean;
   children: React.ReactNode;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ loading, variant = 'primary', fullWidth = false, children, className = '', disabled, ...props }, ref) => {
-    const baseStyles = 'flex items-center justify-center rounded text-sm py-2 px-3 font-medium transition-colors duration-200';
+    const baseStyles =
+      'flex items-center justify-center rounded text-sm py-2 px-3 font-medium transition-colors duration-200';
 
     const variants = {
       primary: 'bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300',
       secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 disabled:bg-gray-100',
-      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-50'
+      outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-50',
+      danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300'
     };
 
     const width = fullWidth ? 'w-full' : '';

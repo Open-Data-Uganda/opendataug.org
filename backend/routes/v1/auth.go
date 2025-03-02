@@ -53,6 +53,8 @@ func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
 		{
 			protected.POST("/logout", h.LogoutUser)
 			protected.GET("/profile", h.Profile)
+			protected.PATCH("/profile", h.UpdateProfile)
+			protected.DELETE("/account", h.DeleteAccount)
 		}
 	}
 }
@@ -321,7 +323,7 @@ func (h *AuthHandler) Profile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": profile})
+	c.JSON(http.StatusOK, profile)
 }
 
 func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
@@ -372,7 +374,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	user := models.User{
 		Number:    commons.UUIDGenerator(),
 		FirstName: payload.FirstName,
-		OtherName: payload.OtherName,
+		LastName:  payload.LastName,
 		Email:     strings.ToLower(payload.Email),
 		Role:      map[bool]string{true: "ADMIN", false: "USER"}[payload.Role == "ADMIN"],
 		Status:    "INACTIVE",
@@ -433,7 +435,7 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	emailService := services.Info{
 		Email:       user.Email,
 		Token:       userToken,
-		MailType:    "Uganda Open Data - Registration",
+		MailType:    "Open Data Uganda - Registration",
 		UserName:    user.FirstName,
 		CurrentYear: time.Now().Year(),
 		Type:        "registration",
@@ -544,4 +546,89 @@ func (h *AuthHandler) APIAuthMiddleware() gin.HandlerFunc {
 		c.Set("user", &user)
 		c.Next()
 	}
+}
+
+func (h *AuthHandler) UpdateProfile(c *gin.Context) {
+	user, err := commons.GetUserFromHeader(c, h.db.DB)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
+	var payload struct {
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+	}
+
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		return
+	}
+
+	updateUser := models.User{
+		FirstName: payload.FirstName,
+		LastName:  payload.LastName,
+	}
+
+	if err := h.db.DB.Model(&user).Where("number = ?", user.Number).Updates(&updateUser).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update profile"})
+		return
+	}
+
+	if err := h.db.DB.Model(&user).Updates(updateUser).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to update profile"))
+		return
+	}
+
+	profile, err := h.userController.GetUserProfile(user.Number)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to fetch updated profile"))
+		return
+	}
+
+	c.JSON(http.StatusOK, profile)
+}
+
+func (h *AuthHandler) DeleteAccount(c *gin.Context) {
+	user, err := commons.GetUserFromHeader(c, h.db.DB)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
+		return
+	}
+
+	tx := h.db.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Where("user_number = ?", user.Number).Delete(&models.PasswordReset{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to delete user data"))
+		return
+	}
+
+	if err := tx.Where("user_number = ?", user.Number).Delete(&models.APIKey{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to delete user data"))
+		return
+	}
+
+	if err := tx.Delete(&user).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to delete account"))
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to delete account"))
+		return
+	}
+
+	h.clearAuthCookies(c)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Account successfully deleted",
+	})
 }

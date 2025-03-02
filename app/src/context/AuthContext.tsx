@@ -29,9 +29,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     checkAuthStatus();
 
-    const intervalId = setInterval(() => {
-      checkAuthStatus();
-    }, 14 * 60 * 1000);
+    const intervalId = setInterval(
+      () => {
+        checkAuthStatus();
+      },
+      14 * 60 * 1000
+    );
 
     return () => clearInterval(intervalId);
   }, []);

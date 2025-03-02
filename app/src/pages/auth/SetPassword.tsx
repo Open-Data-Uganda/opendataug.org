@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -62,10 +62,10 @@ const SetPassword: React.FC = () => {
   };
 
   return (
-    <div className="h-screen">
+    <div className="h-screen overflow-hidden text-sm">
       <SmallHeader />
 
-      <div className="flex min-h-screen justify-center">
+      <div className="flex min-h-screen justify-center overflow-hidden">
         <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
           <div className="w-full max-w-md">
             <div className="mb-8">
@@ -84,31 +84,6 @@ const SetPassword: React.FC = () => {
                 error={errors.password?.message}
                 {...register('password')}
               />
-
-              <div className="mb-4 mt-2">
-                <ul className="space-y-1 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <svg className="mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    At least 8 characters long
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Include numbers and special characters
-                  </li>
-                </ul>
-              </div>
 
               <Input
                 label="Confirm Password"
@@ -148,15 +123,6 @@ const SetPassword: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Need help?{' '}
-                  <Link to="/contact" className="text-blue-600 hover:text-blue-700">
-                    Contact Support
-                  </Link>
-                </p>
               </div>
             </form>
           </div>

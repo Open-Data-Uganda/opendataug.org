@@ -10,8 +10,8 @@ export const ResetPasswordSchema = z.object({
 });
 
 export const SignUpSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').trim(),
-  lastName: z.string().min(1, 'Last name is required').trim(),
+  first_name: z.string().min(1, 'First name is required').trim(),
+  last_name: z.string().min(1, 'Last name is required').trim(),
   email: z.string().email('Invalid email address').trim().toLowerCase()
 });
 
@@ -43,7 +43,6 @@ export const SetPasswordSchema = z
 
 export const EditProfileSchema = z.object({
   first_name: z.string().optional(),
-  other_name: z.string().optional(),
-  email: z.string().optional(),
-  phone: z.string().optional()
+  last_name: z.string().optional(),
+  email: z.string().optional()
 });

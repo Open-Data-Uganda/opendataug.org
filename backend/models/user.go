@@ -15,7 +15,7 @@ type User struct {
 	Email     string `gorm:"uniqueIndex;not null"`
 	Name      string `gorm:"not null"`
 	FirstName string `gorm:"type:text;size:255;not null;" json:"first_name"`
-	OtherName string `gorm:"type:text;size:255;" json:"other_name"`
+	LastName  string `gorm:"type:text;size:255;" json:"last_name"`
 	Role      string `gorm:"type:text;size:100;default:USER;" json:"role"`
 	IsAdmin   bool   `gorm:"default:false;" json:"is_admin"`
 	Status    string `json:"status" gorm:"size:100;not null"`
@@ -58,8 +58,8 @@ func (u *User) Validate(action string) error {
 		if u.FirstName == "" {
 			return errors.New("first name is required")
 		}
-		if u.OtherName == "" {
-			return errors.New("other name is required")
+		if u.LastName == "" {
+			return errors.New("last name is required")
 		}
 		if u.Email == "" {
 			return errors.New("email is required")
@@ -114,14 +114,14 @@ type (
 
 type SignUpInput struct {
 	FirstName string `json:"first_name" binding:"required"`
-	OtherName string `json:"other_name"`
+	LastName  string `json:"last_name"`
 	Email     string `json:"email" binding:"required"`
 	Role      string `json:"role"`
 }
 
 func (s *SignUpInput) Prepare() {
 	s.FirstName = strings.TrimSpace(s.FirstName)
-	s.OtherName = strings.TrimSpace(s.OtherName)
+	s.LastName = strings.TrimSpace(s.LastName)
 	s.Email = strings.TrimSpace(strings.ToLower(s.Email))
 }
 

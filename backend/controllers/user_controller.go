@@ -43,7 +43,7 @@ type UserProfileResponse struct {
 	Email     string `json:"email"`
 	Name      string `json:"name"`
 	FirstName string `json:"first_name"`
-	OtherName string `json:"other_name"`
+	LastName  string `json:"last_name"`
 }
 
 func (c *UserController) FindByEmail(email string) (*models.User, error) {
@@ -239,9 +239,9 @@ func (c *UserController) GetUserProfile(userNumber string) (*UserProfileResponse
 
 	return &UserProfileResponse{
 		Email:     user.Email,
-		Name:      user.FirstName + " " + user.OtherName,
+		Name:      user.FirstName + " " + user.LastName,
 		FirstName: user.FirstName,
-		OtherName: user.OtherName,
+		LastName:  user.LastName,
 	}, nil
 }
 
