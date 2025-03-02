@@ -106,14 +106,14 @@ const Overview: React.FC = () => {
                 </tr>
               </thead>
 
-              <tbody className=' h-20'>
+              <tbody className=" h-20">
                 {isLoading && <TableLoader />}
                 {isError && <TableError />}
                 {data?.length === 0 && <TableNoData />}
 
                 {data?.map((api_key: APIKey) => (
                   <tr key={api_key.id}>
-                    <TableData> { api_key.name}</TableData>
+                    <TableData> {api_key.name}</TableData>
                     <TableData>
                       <div className="flex items-center gap-2">
                         <button

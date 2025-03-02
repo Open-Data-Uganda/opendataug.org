@@ -47,8 +47,8 @@ const SignUp: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          first_name: data.firstName,
-          other_name: data.lastName,
+          first_name: data.first_name,
+          last_name: data.last_name,
           email: data.email
         })
       });
@@ -78,43 +78,38 @@ const SignUp: React.FC = () => {
           <div className="mb-8 text-center">
             <h1 className="mb-2 text-2xl font-bold text-gray-800">Access Uganda's Data</h1>
             <p className="text-sm text-gray-600">
-              Get started with comprehensive data about Uganda's districts, villages, and administrative units 
+              Get started with comprehensive data about Uganda's districts, villages, and administrative units
               <span className="ml-1">🇺🇬</span>
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} >
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className=" mb-6">
-                <div className=" flex flex-col">
-              <Input
-                label="First name"
-                type="text"
-                 required
-                error={errors.firstName?.message}
-                {...register('firstName')}
-              />
+              <div className=" flex flex-col">
+                <Input
+                  label="First name"
+                  id="first_name"
+                  type="text"
+                  required
+                  error={errors.first_name?.message}
+                  {...register('first_name')}
+                />
 
-              <Input
-                label="Last name"
-                type="text"
-                 required
-                error={errors.lastName?.message}
-                {...register('lastName')}
-              />
+                <Input
+                  label="Last name"
+                  type="text"
+                  id="last_name"
+                  required
+                  error={errors.last_name?.message}
+                  {...register('last_name')}
+                />
+              </div>
+
+              <Input label="Email address" type="email" required error={errors.email?.message} {...register('email')} />
             </div>
 
-            <Input
-              label="Email address"
-              type="email"
-               required
-              error={errors.email?.message}
-              {...register('email')}
-            />
-
-            </div>
-            
             <div className="space-y-4">
-              <label className="flex items-start mb-6">
+              <label className="mb-6 flex items-start">
                 <input
                   type="checkbox"
                   className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -124,28 +119,33 @@ const SignUp: React.FC = () => {
                 />
                 <span className="ml-2 text-xs text-gray-600">
                   By clicking Get started, you agree to our{' '}
-                  <Link to="/terms" className="font-medium text-blue-600 hover:text-blue-500">
+                  <a
+                    target="_blank"
+                    href="https://opendataug.org/terms"
+                    className="font-medium text-blue-600 hover:text-blue-500">
                     Terms of Service
-                  </Link>{' '}
+                  </a>{' '}
                   and{' '}
-                  <Link to="/privacy" className="font-medium text-blue-600 hover:text-blue-500">
+                  <a
+                    href="https://opendataug.org/provacy"
+                    target="_blank"
+                    className="font-medium text-blue-600 hover:text-blue-500">
                     Privacy Policy
-                  </Link>
+                  </a>
                 </span>
               </label>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={disabled || !termsAccepted} 
-              loading={loading} 
+            <Button
+              type="submit"
+              disabled={disabled || !termsAccepted}
+              loading={loading}
               fullWidth
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
+              className="bg-blue-600 text-white hover:bg-blue-700">
               Get started
             </Button>
 
-            <p className="text-center mt-4 text-sm text-gray-600">
+            <p className="mt-4 text-center text-sm text-gray-600">
               Already have an account?{' '}
               <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
                 Login

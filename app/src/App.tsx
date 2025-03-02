@@ -5,6 +5,7 @@ import PageTitle from './components/PageTitle';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { FallbackProvider } from './composables/FallbackProvider';
 import Overview from './features/apiKeys';
+import EditProfile from './features/EditProfile';
 import Login from './pages/auth/Login';
 import ResetPassword from './pages/auth/ResetPassword';
 import SetPassword from './pages/auth/SetPassword';
@@ -32,23 +33,81 @@ const App = () => {
   ) : (
     <FallbackProvider>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<SignUp />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/login"
+          element={
+            <>
+              <PageTitle title="Login | Open Data Uganda" />
+              <Login />
+            </>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <>
+              <PageTitle title="Sign Up | Open Data Uganda" />
+              <SignUp />
+            </>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <PageTitle title="Reset Password | Open Data Uganda" />
+              <ResetPassword />
+            </>
+          }
+        />
         <Route
           path="/set-password"
           element={
             <>
-              <PageTitle title="Set Password | Uganda Open Data" />
+              <PageTitle title="Set Password | Open Data Uganda" />
               <SetPassword />
             </>
           }
         />
-        <Route path="*" element={<PageNotFound />} />
+        <Route
+          path="*"
+          element={
+            <>
+              <PageTitle title="Page Not Found | Open Data Uganda" />
+              <PageNotFound />
+            </>
+          }
+        />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Overview />} />
-          <Route path="/dashboard/*" element={<NotFound />} />
+          <Route
+            path="/dashboard"
+            element={
+              <>
+                <PageTitle title="Dashboard | Open Data Uganda" />
+                <Overview />
+              </>
+            }
+          />
+          <Route
+            path="/dashboard/settings"
+            element={
+              <>
+                <PageTitle title="Profile | Open Data Uganda" />
+                <EditProfile />
+              </>
+            }
+          />
+
+          <Route
+            path="/dashboard/*"
+            element={
+              <>
+                <PageTitle title="Not Found | Open Data Uganda" />
+                <NotFound />
+              </>
+            }
+          />
         </Route>
       </Routes>
     </FallbackProvider>

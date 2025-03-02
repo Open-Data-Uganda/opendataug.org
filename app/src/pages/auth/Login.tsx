@@ -50,9 +50,9 @@ const Login: React.FC = () => {
     <div className="max-h-screen overflow-hidden">
       <SmallHeader />
 
-      <div className="mx-auto flex  justify-center px-4 py-10" >
+      <div className="mx-auto flex  justify-center px-4 py-10">
         <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
-          <div className="w-full max-w-md rounded-lg bg-white p-8">
+          <div className="w-full max-w-md bg-white p-8">
             <div className="mb-8 text-center">
               <h1 className="mb-2 text-2xl font-bold text-gray-800">Welcome back</h1>
               <p className="text-gray-600">Access Uganda's comprehensive data through our simple API 🇺🇬</p>
@@ -62,8 +62,8 @@ const Login: React.FC = () => {
               <Input
                 label="Email address"
                 type="email"
-                autoComplete='email'
-                 required
+                autoComplete="email"
+                required
                 error={errors.email?.message}
                 {...register('email')}
               />
@@ -71,28 +71,29 @@ const Login: React.FC = () => {
               <Input
                 label="Password"
                 type="password"
-                 required
+                required
                 error={errors.password?.message}
                 {...register('password')}
               />
 
-              <Link to="/reset-password" className="mb-6 text-sm block text-blue-600 hover:text-blue-800 transition-colors">
+              <Link
+                to="/reset-password"
+                className="mb-6 block text-sm text-blue-600 transition-colors hover:text-blue-800">
                 Forgot your password?
               </Link>
 
-              <Button 
-                type="submit" 
-                disabled={disabled} 
-                loading={loading} 
+              <Button
+                type="submit"
+                disabled={disabled}
+                loading={loading}
                 fullWidth
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
-              >
+                className="bg-blue-600 transition-colors hover:bg-blue-700">
                 Login
               </Button>
 
-              <p className="mt-6 text-sm text-center text-gray-600">
+              <p className="mt-6 text-center text-sm text-gray-600">
                 Don't have an account?{' '}
-                <Link to="/" className="text-blue-600 hover:text-blue-500 text-sm font-medium transition-colors">
+                <Link to="/" className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-500">
                   Sign Up
                 </Link>
               </p>

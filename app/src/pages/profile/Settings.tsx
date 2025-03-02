@@ -1,13 +1,30 @@
-import Breadcrumb from '../../components/Breadcrumb';
+import { useState } from 'react';
 import userThree from '../../images/user/user-03.png';
 import DefaultLayout from '../../layout/DefaultLayout';
 
 const Settings = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
+
+    try {
+      // Add your API call here
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <DefaultLayout>
       <div className="mx-auto max-w-270">
-        <Breadcrumb primary={false} pageName="Settings" />
-
         <div className="grid grid-cols-5 gap-8">
           <div className="col-span-5 xl:col-span-3">
             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -15,7 +32,15 @@ const Settings = () => {
                 <h3 className="font-medium text-black dark:text-white">Personal Information</h3>
               </div>
               <div className="p-7">
-                <form action="#">
+                {message && (
+                  <div
+                    className={`mb-4 rounded p-4 ${
+                      message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                    {message.text}
+                  </div>
+                )}
+                <form action="#" onSubmit={handleSubmit}>
                   <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
                     <div className="w-full sm:w-1/2">
                       <label className="mb-3 block text-sm font-medium text-black dark:text-white" htmlFor="fullName">
@@ -175,14 +200,16 @@ const Settings = () => {
 
                   <div className="flex justify-end gap-4.5">
                     <button
+                      disabled={isLoading}
                       className="flex justify-center rounded border border-stroke px-6 py-2 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
-                      type="submit">
+                      type="button">
                       Cancel
                     </button>
                     <button
-                      className="text-gray-200hover:bg-opacity-90 flex justify-center rounded bg-primary px-6 py-2 font-medium"
+                      disabled={isLoading}
+                      className="flex justify-center rounded bg-primary px-6 py-2 font-medium text-gray-200 hover:bg-opacity-90"
                       type="submit">
-                      Save
+                      {isLoading ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                 </form>

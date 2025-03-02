@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             maxLength={maxLength}
-            className={`w-full rounded border py-2 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${className}`}
+            className={`w-full rounded border p-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${className}`}
             {...props}
           />
         </div>
