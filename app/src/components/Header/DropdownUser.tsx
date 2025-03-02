@@ -41,6 +41,13 @@ const DropdownUser = () => {
     return <div>Loading...</div>;
   }
 
+  const handleLogout = async () => {
+    await logout();
+
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+  };
   return (
     <div className="relative">
       <Link ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" to="#">
@@ -80,7 +87,7 @@ const DropdownUser = () => {
           dropdownOpen === true ? 'block' : 'hidden'
         }`}>
         <button
-          onClick={() => logout()}
+          onClick={handleLogout}
           className="flex items-center gap-3.5 px-6 py-4 text-13 font-medium duration-300 ease-in-out hover:text-primary  ">
           <ArrowRightEndOnRectangleIcon className=" h-5" />
           Log Out
