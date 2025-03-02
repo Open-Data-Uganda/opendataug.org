@@ -54,7 +54,6 @@ const CreateAPIKey = ({ onCreateKey }: CreateAPIKeyProps) => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <Input
               label="API Key Name"
-              placeholder="Enter a name for your API key"
               required
               maxLength={10}
               showCharCount

@@ -40,7 +40,7 @@ const Actions: React.FC<ActionsProps> = ({ onTrashClick }) => {
         ...
       </button>
 
-      <div className={` ${dropdownOpen ? 'relative z-10' : 'hidden'}  divide-y divide-gray-100 rounded `}>
+      <div className={` ${dropdownOpen ? 'absolute z-50' : 'hidden'}  divide-y divide-gray-100 rounded `}>
         <div className="absolute -left-10 z-10 w-auto justify-start rounded-md border border-[#eee] bg-white py-2 text-13 text-gray-700 shadow ">
           <span className="flex cursor-pointer flex-row items-center px-3 py-2" onClick={onTrashClick}>
             <button className="  text-red-700 hover:text-primary">

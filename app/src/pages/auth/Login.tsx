@@ -47,14 +47,14 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="h-screen">
+    <div className="max-h-screen overflow-hidden">
       <SmallHeader />
 
-      <div className="mx-auto flex min-h-screen justify-center">
+      <div className="mx-auto flex  justify-center px-4 py-10" >
         <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
-          <div className="w-full max-w-md">
-            <div className="mb-8">
-              <h1 className="mb-2 text-2xl font-bold">Welcome back</h1>
+          <div className="w-full max-w-md rounded-lg bg-white p-8">
+            <div className="mb-8 text-center">
+              <h1 className="mb-2 text-2xl font-bold text-gray-800">Welcome back</h1>
               <p className="text-gray-600">Access Uganda's comprehensive data through our simple API 🇺🇬</p>
             </div>
 
@@ -62,8 +62,8 @@ const Login: React.FC = () => {
               <Input
                 label="Email address"
                 type="email"
-                placeholder="Email address"
-                required
+                autoComplete='email'
+                 required
                 error={errors.email?.message}
                 {...register('email')}
               />
@@ -71,23 +71,28 @@ const Login: React.FC = () => {
               <Input
                 label="Password"
                 type="password"
-                placeholder="Password"
-                required
+                 required
                 error={errors.password?.message}
                 {...register('password')}
               />
 
-              <Link to="/reset-password" className="mb-6 block text-blue-600">
+              <Link to="/reset-password" className="mb-6 text-sm block text-blue-600 hover:text-blue-800 transition-colors">
                 Forgot your password?
               </Link>
 
-              <Button type="submit" disabled={disabled} loading={loading} fullWidth>
+              <Button 
+                type="submit" 
+                disabled={disabled} 
+                loading={loading} 
+                fullWidth
+                className="bg-blue-600 hover:bg-blue-700 transition-colors"
+              >
                 Login
               </Button>
 
-              <p className="mt-6 text-center">
+              <p className="mt-6 text-sm text-center text-gray-600">
                 Don't have an account?{' '}
-                <Link to="/" className="text-blue-600">
+                <Link to="/" className="text-blue-600 hover:text-blue-500 text-sm font-medium transition-colors">
                   Sign Up
                 </Link>
               </p>
