@@ -106,7 +106,7 @@ const Overview: React.FC = () => {
                 </tr>
               </thead>
 
-              <tbody>
+              <tbody className=' h-20'>
                 {isLoading && <TableLoader />}
                 {isError && <TableError />}
                 {data?.length === 0 && <TableNoData />}

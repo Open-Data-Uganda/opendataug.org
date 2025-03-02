@@ -9,7 +9,7 @@ interface ModalProps {
 
 export const DeleteModal: FC<ModalProps> = ({ handleShow, title, handleClick }) => {
   return (
-    <div className="fixed left-0 top-[20%] z-10 my-auto w-full overflow-y-auto md:top-0">
+    <div className="fixed left-0 top-[10%] z-10 my-auto w-full overflow-y-auto md:top-0">
       <div className="my-auto flex items-center justify-center px-4 pb-20 pt-4 text-center sm:p-0">
         <span className="hidden sm:inline-block sm:h-screen sm:align-middle">&#8203;</span>
 

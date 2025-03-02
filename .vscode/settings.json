@@ -1,4 +1,7 @@
 {
   "editor.defaultFormatter": "svelte.svelte-vscode",
-  "editor.formatOnPaste": true
+  "editor.formatOnPaste": true,
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
