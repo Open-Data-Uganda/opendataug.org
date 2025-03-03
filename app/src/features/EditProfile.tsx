@@ -98,7 +98,7 @@ const Settings = () => {
       <div className="mx-auto max-w-270">
         <div className="grid grid-cols-5 gap-8">
           <div className="col-span-5 xl:col-span-3">
-            <div className="rounded-sm border border-stroke bg-white">
+            <div className="rounded-sm  bg-white">
               <div className="border-b border-stroke px-7 py-4">
                 <h3 className="font-medium text-black">Personal Information</h3>
               </div>
@@ -158,7 +158,7 @@ const Settings = () => {
             </div>
           </div>
           <div className="col-span-5 xl:col-span-3">
-            <div className="mt-7.5 rounded-sm border border-stroke bg-white">
+            <div className="mt-7.5 rounded-sm  bg-white">
               <div className="border-b border-stroke px-7 py-4">
                 <h3 className="font-medium text-black">Account Settings</h3>
               </div>
