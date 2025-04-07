@@ -11,18 +11,42 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@master
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          host: ${{secrets.SSH_HOST}}
-          username: ${{secrets.SSH_USER}}
+          node-version: "14"
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{secrets.HOST}}
+          username: ${{secrets.USER}}
           key: ${{secrets.SSH_PRIVATE_KEY}}
           port: 22
           script: |
-            cd ../home/opendataug.org
+            set -e
+            echo "Starting deployment..."
+            cd ../home/crm
             sh ./deploy.sh
+            echo "Deployment completed successfully."
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "Deployment failed. Please check the logs for details."
+
+      - name: Send Email on Failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.example.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Deployment Failed"
+          body: "The deployment has failed. Please check the logs for more details."
+          to: recipient@example.com
+          from: sender@example.com
