@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "20"
 
       - name: SSH and Deploy
         uses: appleboy/ssh-action@v0.1.0
@@ -30,7 +30,7 @@ jobs:
           script: |
             set -e
             echo "Starting deployment..."
-            cd ../home/crm
+            cd ../home/opendataug.org
             sh ./deploy.sh
             echo "Deployment completed successfully."
 
