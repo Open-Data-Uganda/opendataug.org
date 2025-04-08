@@ -1,7 +1,7 @@
 import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import defaultImg from '../../../../assets/default.png';
+import defaultImg from '../../assets/default.png';
 
 import { useAuth } from '../../context/AuthContext';
 import useGetRequest from '../../hooks/useGetRequest';
