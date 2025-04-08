@@ -1,6 +1,7 @@
 import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import defaultImg from '../../../../assets/default.png';
 
 import { useAuth } from '../../context/AuthContext';
 import useGetRequest from '../../hooks/useGetRequest';
@@ -56,11 +57,7 @@ const DropdownUser = () => {
         </span>
 
         <span className="h-12 w-12 rounded-full">
-          <img
-            src={'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=100'}
-            className="rounded-full"
-            alt="User"
-          />
+          <img src={defaultImg} className="rounded-full" alt="User" />
         </span>
 
         <svg
