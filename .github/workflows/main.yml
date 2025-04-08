@@ -37,16 +37,3 @@ jobs:
       - name: Notify on Failure
         if: failure()
         run: echo "Deployment failed. Please check the logs for details."
-
-      - name: Send Email on Failure
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.example.com
-          server_port: 587
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "Deployment Failed"
-          body: "The deployment has failed. Please check the logs for more details."
-          to: recipient@example.com
-          from: sender@example.com
