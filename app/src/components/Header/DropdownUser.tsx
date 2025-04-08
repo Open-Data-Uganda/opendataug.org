@@ -49,6 +49,7 @@ const DropdownUser = () => {
       window.location.href = '/login';
     }
   };
+
   return (
     <div className="relative">
       <Link ref={trigger} onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-4" to="#">
