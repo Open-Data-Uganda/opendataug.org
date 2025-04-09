@@ -4,10 +4,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/database"
 	"opendataug.org/middleware"
 	v1 "opendataug.org/routes/v1"
@@ -23,23 +23,13 @@ func SetupRouter(db *database.Database) *gin.Engine {
 	}
 
 	router.Use(static.Serve("./templates/*", static.LocalFile("./templates/*", false)))
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:              []string{"http://localhost:3000", "http://localhost:5173", "https://app.opendataug.org"},
-		AllowMethods:              []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:              []string{"Origin", "Content-Type", "Accept", "Authorization", "x-api-key", "User-Number"},
-		ExposeHeaders:             []string{"Content-Length", "Set-Cookie"},
-		AllowCredentials:          true,
-		OptionsResponseStatusCode: 204,
-		MaxAge:                    12 * time.Hour,
-	}))
-
+	router.Use(middleware.CorsMiddleware())
 	router.NoRoute(commons.RouteNotFound)
 
-	v1Group := router.Group("/v1")
-	// if os.Getenv("ENVIRONMENT") == "prod" {
-	// 	v1Group.Use(middleware.RateLimit(1000, time.Hour, 1))
-	// }
+	v1Group := router.Group("v1")
+	if os.Getenv("ENVIRONMENT") == constants.ENVIRONMENT_PROD {
+		v1Group.Use(middleware.RateLimit(60, time.Minute, 1))
+	}
 
 	v1Group.Use(middleware.TimeoutMiddleware(30 * time.Second))
 
