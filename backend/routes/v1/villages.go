@@ -43,7 +43,7 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHan
 
 func (h *VillageHandler) createVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -60,7 +60,7 @@ func (h *VillageHandler) createVillage(c *gin.Context) {
 
 func (h *VillageHandler) updateVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -75,7 +75,7 @@ func (h *VillageHandler) updateVillage(c *gin.Context) {
 
 func (h *VillageHandler) deleteVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}

@@ -10,16 +10,35 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserRole string
+
+const (
+	RoleAdmin UserRole = "ADMIN"
+	RoleUser  UserRole = "USER"
+)
+
 type User struct {
-	Number    string `gorm:"primaryKey;type:varchar(36);not null;unique" json:"number"`
-	Email     string `gorm:"uniqueIndex;not null"`
-	Name      string `gorm:"not null"`
-	FirstName string `gorm:"type:text;size:255;not null;" json:"first_name"`
-	LastName  string `gorm:"type:text;size:255;" json:"last_name"`
-	Role      string `gorm:"type:text;size:100;default:USER;" json:"role"`
-	IsAdmin   bool   `gorm:"default:false;" json:"is_admin"`
-	Status    string `json:"status" gorm:"size:100;not null"`
+	Number    string   `gorm:"primaryKey;type:varchar(36);not null;unique" json:"number"`
+	Email     string   `gorm:"uniqueIndex;not null" json:"email"`
+	Name      string   `gorm:"not null" json:"name"`
+	FirstName string   `gorm:"type:text;size:255;not null;" json:"first_name"`
+	LastName  string   `gorm:"type:text;size:255;" json:"last_name"`
+	Role      UserRole `gorm:"type:text;size:100;default:USER;" json:"role"`
+	Status    string   `json:"status" gorm:"size:100;not null"`
 	gorm.Model
+}
+
+func (u *User) IsAdmin() bool {
+	return u.Role == RoleAdmin
+}
+
+func (u *User) ValidateRole() error {
+	switch u.Role {
+	case RoleAdmin, RoleUser:
+		return nil
+	default:
+		return errors.New("invalid role")
+	}
 }
 
 type SignInRequest struct {
@@ -113,10 +132,10 @@ type (
 )
 
 type SignUpInput struct {
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email" binding:"required"`
-	Role      string `json:"role"`
+	FirstName string   `json:"first_name" binding:"required"`
+	LastName  string   `json:"last_name"`
+	Email     string   `json:"email" binding:"required"`
+	Role      UserRole `json:"role"`
 }
 
 func (s *SignUpInput) Prepare() {
@@ -132,6 +151,13 @@ func (s *SignUpInput) Validate() error {
 	if s.Email == "" {
 		return errors.New("email is required")
 	}
-
+	if s.Role != "" {
+		switch s.Role {
+		case RoleAdmin, RoleUser:
+			return nil
+		default:
+			return errors.New("invalid role")
+		}
+	}
 	return nil
 }

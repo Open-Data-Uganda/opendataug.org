@@ -45,7 +45,7 @@ func (s *AuthService) CreateLoginSession(user *models.User) (*LoginResponse, *To
 		RefreshToken: tokenDetails.RefreshToken,
 		AccessToken:  tokenDetails.AccessToken,
 		UserNumber:   user.Number,
-		Role:         user.Role,
+		Role:         string(user.Role),
 		ExpiresIn:    tokenDetails.AccessTokenExpiresIn,
 	}
 
@@ -126,7 +126,7 @@ func CreateToken(userNumber string) (*TokenDetails, error) {
 	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		log.Println(privateKey)
-		return nil, fmt.Errorf("could not decode token private key: %w", err)
+		return nil, fmt.Errorf("invalid token")
 	}
 
 	rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)

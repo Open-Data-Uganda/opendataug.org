@@ -377,9 +377,8 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		FirstName: payload.FirstName,
 		LastName:  payload.LastName,
 		Email:     strings.ToLower(payload.Email),
-		Role:      map[bool]string{true: constants.RoleAdmin, false: "USER"}[payload.Role == constants.RoleAdmin],
+		Role:      models.UserRole(map[bool]string{true: constants.RoleAdmin, false: "USER"}[payload.Role == constants.RoleAdmin]),
 		Status:    "INACTIVE",
-		IsAdmin:   payload.Role == constants.RoleAdmin,
 	}
 
 	emailExists, _ = h.userController.CheckEmailExists(user.Email)

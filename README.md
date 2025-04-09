@@ -7,11 +7,13 @@ A modern web application for accessing and visualizing Uganda's open data, built
 The project consists of two main components:
 
 ### Frontend (`/app`)
+
 - Built with React, TypeScript, and Vite
 - Uses Tailwind CSS for styling
 - Modern UI components and responsive design
 
 ### Backend (`/backend`)
+
 - Built with Go
 - RESTful API architecture
 - PostgreSQL database integration
@@ -29,21 +31,25 @@ The project consists of two main components:
 ### Frontend Setup
 
 1. Navigate to the app directory:
+
 ```bash
 cd app
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file based on the example:
+
 ```bash
 cp .env.example .env
 ```
 
 4. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -51,21 +57,25 @@ npm run dev
 ### Backend Setup
 
 1. Navigate to the backend directory:
+
 ```bash
 cd backend
 ```
 
 2. Install Go dependencies:
+
 ```bash
 go mod download
 ```
 
 3. Create a `.env` file based on the example:
+
 ```bash
 cp .env.example .env
 ```
 
 4. Start the development server:
+
 ```bash
 go run main.go
 ```

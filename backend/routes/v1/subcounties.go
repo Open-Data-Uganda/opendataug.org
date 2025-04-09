@@ -44,7 +44,7 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 
 func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -106,7 +106,7 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 
 func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -138,7 +138,7 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 
 func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}

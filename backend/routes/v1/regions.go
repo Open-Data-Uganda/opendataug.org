@@ -86,7 +86,7 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 
 func (h *RegionHandler) createRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -120,7 +120,7 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 
 func (h *RegionHandler) updateRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -165,7 +165,7 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}

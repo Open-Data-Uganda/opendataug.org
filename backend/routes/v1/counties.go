@@ -69,7 +69,7 @@ func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 
 func (h *CountyHandler) createCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to create counties"))
 		return
 	}
@@ -121,7 +121,7 @@ func (h *CountyHandler) handleGetCounty(c *gin.Context) {
 
 func (h *CountyHandler) updateCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to update counties"))
 		return
 	}
@@ -167,7 +167,7 @@ func (h *CountyHandler) updateCounty(c *gin.Context) {
 
 func (h *CountyHandler) deleteCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to delete counties"))
 		return
 	}
