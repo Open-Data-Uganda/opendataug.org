@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "GENERATE_SOURCEMAP=false vite build",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "preview": "vite preview"
   },
   "author": {
