@@ -22,7 +22,7 @@ func NewVillageController(db *database.Database) *VillageController {
 func (c *VillageController) CreateVillage(ctx *gin.Context) error {
 	var payload models.Village
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		return errors.NewValidationError(err.Error(), nil)
+		return errors.NewValidationError("Failed to parse request body")
 	}
 
 	var parish models.Parish
@@ -43,7 +43,7 @@ func (c *VillageController) CreateVillage(ctx *gin.Context) error {
 	}
 
 	if err := c.db.DB.Create(&village).Error; err != nil {
-		return errors.NewDatabaseError("Database level error occured")
+		return errors.NewDatabaseError("Database level error occurred")
 	}
 
 	return nil
@@ -59,14 +59,14 @@ func (c *VillageController) UpdateVillage(ctx *gin.Context) error {
 
 	var payload models.Village
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		return errors.NewValidationError(err.Error(), nil)
+		return errors.NewValidationError("Failed to parse request body")
 	}
 
 	village.Name = payload.Name
 	village.ParishNumber = payload.ParishNumber
 
 	if err := c.db.DB.Save(&village).Error; err != nil {
-		return errors.NewDatabaseError("Database level error occured")
+		return errors.NewDatabaseError("Database level error occurred")
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func (c *VillageController) DeleteVillage(ctx *gin.Context) error {
 	}
 
 	if err := c.db.DB.Delete(&village).Error; err != nil {
-		return errors.NewDatabaseError("Database level error occured")
+		return errors.NewDatabaseError("Database level error occurred")
 	}
 
 	return nil
@@ -94,7 +94,7 @@ func (c *VillageController) GetAllVillages(ctx *gin.Context) ([]models.Village, 
 	if err := c.db.DB.Offset((pagination.Page - 1) * pagination.Limit).
 		Limit(pagination.Limit).
 		Find(&villages).Error; err != nil {
-		return nil, errors.NewDatabaseError("Database level error occured")
+		return nil, errors.NewDatabaseError("Database level error occurred")
 	}
 
 	return villages, nil

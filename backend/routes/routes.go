@@ -71,7 +71,6 @@ func SetupRouter(db *database.Database) *gin.Engine {
 
 			apiKeyHandler := v1.NewAPIKeyHandler(db)
 			apiKeyHandler.RegisterRoutes(protected, authHandler)
-
 		}
 	}
 

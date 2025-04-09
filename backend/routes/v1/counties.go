@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/database"
 	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
@@ -23,14 +24,11 @@ func NewCountyHandler(db *database.Database) *CountyHandler {
 func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	counties := r.Group("/counties")
 	{
-
-		apiProtected := counties.Group("/")
+		apiProtected := counties.Group("")
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
 			counties.GET("", h.handleAllCounties)
 			counties.GET("/:id", h.handleGetCounty)
-			counties.GET("/:id/subcounties", h.getSubCounties)
-			counties.GET("/district/:id", h.getCountiesByDistrict)
 		}
 
 		private := counties.Group("")
@@ -40,7 +38,6 @@ func (h *CountyHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 			counties.PUT("/:id", h.updateCounty)
 			counties.DELETE("/:id", h.deleteCounty)
 		}
-
 	}
 }
 
@@ -72,7 +69,7 @@ func (h *CountyHandler) handleAllCounties(c *gin.Context) {
 
 func (h *CountyHandler) createCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to create counties"))
 		return
 	}
@@ -124,7 +121,7 @@ func (h *CountyHandler) handleGetCounty(c *gin.Context) {
 
 func (h *CountyHandler) updateCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to update counties"))
 		return
 	}
@@ -170,7 +167,7 @@ func (h *CountyHandler) updateCounty(c *gin.Context) {
 
 func (h *CountyHandler) deleteCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("You are not authorized to delete counties"))
 		return
 	}
@@ -197,57 +194,4 @@ func (h *CountyHandler) deleteCounty(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "County deleted successfully",
 	})
-}
-
-func (h *CountyHandler) getSubCounties(c *gin.Context) {
-	number := c.Param("id")
-	number = commons.Sanitize(number)
-	if number == "" {
-		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("Invalid county id"))
-		return
-	}
-
-	var county models.County
-	if err := h.db.DB.Preload("SubCounties").First(&county, "number = ?", number).Error; err != nil {
-		c.JSON(http.StatusNotFound, customerrors.NewNotFoundError("County not found"))
-		return
-	}
-
-	var response []models.SubCountyResponse
-	for _, subCounty := range county.SubCounties {
-		response = append(response, models.SubCountyResponse{
-			Name: subCounty.Name,
-			ID:   subCounty.Number,
-		})
-	}
-
-	c.JSON(http.StatusOK, response)
-}
-
-func (h *CountyHandler) getCountiesByDistrict(c *gin.Context) {
-	districtNumber := c.Param("id")
-	if districtNumber == "" {
-		c.JSON(http.StatusBadRequest, customerrors.NewBadRequestError("District id is required"))
-		return
-	}
-
-	districtNumber = commons.Sanitize(districtNumber)
-
-	var counties []models.County
-	if err := h.db.DB.Where("district_number = ?", districtNumber).Preload("District").Find(&counties).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch counties in a district"))
-		return
-	}
-
-	var response []models.CountyResponse
-	for _, county := range counties {
-		response = append(response, models.CountyResponse{
-			ID:           county.Number,
-			Name:         county.Name,
-			DistrictID:   county.DistrictNumber,
-			DistrictName: county.District.Name,
-		})
-	}
-
-	c.JSON(http.StatusOK, response)
 }

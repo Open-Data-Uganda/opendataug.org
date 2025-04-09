@@ -13,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
 	customerrors "opendataug.org/errors"
@@ -62,7 +63,7 @@ func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var payload models.SignInRequest
 	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
@@ -136,7 +137,7 @@ func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *services.TokenDetai
 	domainValue := os.Getenv("BASE_URL")
 	sameSite := http.SameSiteStrictMode
 
-	if os.Getenv("ENVIRONMENT") == "dev" {
+	if os.Getenv("ENVIRONMENT") == constants.ENVIRONMENT_DEV {
 		secureValue = false
 		domainValue = ""
 		sameSite = http.SameSiteLaxMode
@@ -184,7 +185,7 @@ func (h *AuthHandler) setAuthCookies(c *gin.Context, tokens *services.TokenDetai
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	var payload controllers.ResetPasswordInput
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
@@ -260,7 +261,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 func (h *AuthHandler) SetPassword(c *gin.Context) {
 	var payload models.ResetPassword
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
@@ -302,7 +303,7 @@ func (h *AuthHandler) SetPassword(c *gin.Context) {
 func (h *AuthHandler) LogoutUser(c *gin.Context) {
 	refreshToken, _ := c.Cookie("refresh_token")
 	if err := h.userController.InvalidateSession(refreshToken); err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"message": err.Error()})
+		c.JSON(http.StatusForbidden, customerrors.NewForbiddenError("Failed to invalidate session"))
 		return
 	}
 
@@ -313,13 +314,13 @@ func (h *AuthHandler) LogoutUser(c *gin.Context) {
 func (h *AuthHandler) Profile(c *gin.Context) {
 	user, err := commons.GetUserFromHeader(c, h.db.DB)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	profile, err := h.userController.GetUserProfile(user.Number)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, customerrors.NewInternalError("Failed to fetch user profile"))
 		return
 	}
 
@@ -328,7 +329,7 @@ func (h *AuthHandler) Profile(c *gin.Context) {
 
 func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
 	domainValue := os.Getenv("BASE_URL")
-	if os.Getenv("ENVIRONMENT") == "dev" {
+	if os.Getenv("ENVIRONMENT") == constants.ENVIRONMENT_DEV {
 		domainValue = ""
 	}
 
@@ -350,18 +351,18 @@ func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
 func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	var payload models.SignUpInput
 	if err := c.ShouldBindJSON(&payload); err != nil || payload.Validate() != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
 	payload.Prepare()
 	if err := payload.Validate(); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
 	if err := checkmail.ValidateFormat(payload.Email); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Invalid email address", nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Invalid email address"))
 		return
 	}
 
@@ -376,9 +377,9 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		FirstName: payload.FirstName,
 		LastName:  payload.LastName,
 		Email:     strings.ToLower(payload.Email),
-		Role:      map[bool]string{true: "ADMIN", false: "USER"}[payload.Role == "ADMIN"],
+		Role:      map[bool]string{true: constants.RoleAdmin, false: "USER"}[payload.Role == constants.RoleAdmin],
 		Status:    "INACTIVE",
-		IsAdmin:   payload.Role == "ADMIN",
+		IsAdmin:   payload.Role == constants.RoleAdmin,
 	}
 
 	emailExists, _ = h.userController.CheckEmailExists(user.Email)
@@ -561,7 +562,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input", nil))
+		c.JSON(http.StatusUnprocessableEntity, customerrors.NewValidationError("Failed to process input"))
 		return
 	}
 
@@ -571,7 +572,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Model(&user).Where("number = ?", user.Number).Updates(&updateUser).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to update profile"})
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to update profile"))
 		return
 	}
 

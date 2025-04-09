@@ -9,6 +9,12 @@ import (
 	"github.com/resend/resend-go/v2"
 )
 
+const (
+	EmailTypeRegistration = "registration"
+	EmailTypeInvitation   = "invitation"
+	EmailTypeResetPwd     = "password_reset"
+)
+
 type Info struct {
 	Email       string
 	Token       string
@@ -19,21 +25,19 @@ type Info struct {
 }
 
 func (info Info) SendEmail() error {
-
 	client := resend.NewClient(os.Getenv("RESEND_API_KEY"))
 
-	templateUrl := ""
-	if info.Type == "registration" {
-		templateUrl = "./templates/registration.html"
-	} else if info.Type == "invitation" {
-		templateUrl = "./templates/invitation.html"
-	} else if info.Type == "password_reset" {
-		templateUrl = "./templates/reset_password.html"
-	} else {
-		templateUrl = "./templates/reset_password.html"
+	templateURL := ""
+	switch info.Type {
+	case EmailTypeRegistration:
+		templateURL = "./templates/registration.html"
+	case EmailTypeInvitation:
+		templateURL = "./templates/invitation.html"
+	case EmailTypeResetPwd:
+		templateURL = "./templates/reset_password.html"
 	}
 
-	t, err := template.ParseFiles(templateUrl)
+	t, err := template.ParseFiles(templateURL)
 	if err != nil {
 		log.Println(err)
 		return err

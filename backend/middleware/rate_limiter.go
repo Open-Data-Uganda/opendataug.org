@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -48,8 +49,12 @@ func RateLimit(requests int, per time.Duration, burst int) gin.HandlerFunc {
 
 		if !limiter.Allow() {
 			err := errors.NewRateLimitError("Rate limit exceeded. Please try again later.")
-			c.Error(err)
+
+			if errResult := c.Error(err); errResult != nil {
+				log.Printf("Failed to add error to context: %v", errResult)
+			}
 			c.Abort()
+
 			return
 		}
 		c.Next()

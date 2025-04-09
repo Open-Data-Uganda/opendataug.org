@@ -1,7 +1,8 @@
 package v1
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -15,8 +16,11 @@ import (
 )
 
 func init() {
-	source := rand.NewSource(time.Now().UnixNano())
-	rand.New(source)
+	b := make([]byte, 8)
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -49,7 +53,11 @@ type CreateAPIKeyRequest struct {
 func generateRandomString(n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letterBytes))))
+		if err != nil {
+			panic(err)
+		}
+		b[i] = letterBytes[num.Int64()]
 	}
 	return string(b)
 }
@@ -63,7 +71,7 @@ func (h *APIKeyHandler) createAPIKey(c *gin.Context) {
 	var payload CreateAPIKeyRequest
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Failed to parse request body"))
 		return
 	}
 

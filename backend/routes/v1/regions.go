@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/database"
 	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
@@ -46,7 +47,7 @@ func (h *RegionHandler) handleAllRegions(c *gin.Context) {
 
 	var regions []models.Region
 	if err := h.db.DB.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&regions).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -85,14 +86,14 @@ func (h *RegionHandler) handleGetRegion(c *gin.Context) {
 
 func (h *RegionHandler) createRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Failed to parse request body"))
 		return
 	}
 
@@ -108,7 +109,7 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -119,7 +120,7 @@ func (h *RegionHandler) createRegion(c *gin.Context) {
 
 func (h *RegionHandler) updateRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -140,7 +141,7 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 	var payload models.Region
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Failed to parse request bidy"))
 		return
 	}
 
@@ -153,7 +154,7 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 	region.Name = payload.Name
 
 	if err := h.db.DB.Save(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -164,7 +165,7 @@ func (h *RegionHandler) updateRegion(c *gin.Context) {
 
 func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -184,7 +185,7 @@ func (h *RegionHandler) deleteRegion(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Delete(&region).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
