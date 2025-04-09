@@ -31,7 +31,7 @@ func (c *APIKeyController) DeleteAPIKey(userID string, keyID string) error {
 
 func (c *APIKeyController) GetAPIKeys(userID string) ([]models.APIKey, error) {
 	var keys []models.APIKey
-	err := c.db.DB.Where("user_number = ?", userID).Find(&keys).Error
+	err := c.db.DB.Where("user_number = ?", userID).Order("created_at DESC").Find(&keys).Error
 	return keys, err
 }
 
@@ -62,9 +62,7 @@ func (c *APIKeyController) UpdateAPIKeyUsage(apiKeyID string) error {
 
 func (c *APIKeyController) APIKeyNameExists(userNumber string, name string) (bool, error) {
 	var count int64
-	result := c.db.DB.Model(&models.APIKey{}).
-		Where("user_number = ? AND name = ?", userNumber, name).
-		Count(&count)
+	result := c.db.DB.Model(&models.APIKey{}).Where("user_number = ? AND name = ?", userNumber, name).Count(&count)
 
 	if result.Error != nil {
 		return false, result.Error
