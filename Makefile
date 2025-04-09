@@ -1,4 +1,4 @@
-.PHONY: start stop install-frontend install-backend install clean
+.PHONY: start stop install-frontend install-backend install clean lint lint-frontend lint-backend
 
 all: install start
 
@@ -30,4 +30,18 @@ stop:
 clean: stop
 	@echo "Cleaning up..."
 	@rm -rf app/node_modules
-	@rm -rf backend/tmp 
+	@rm -rf backend/tmp
+
+lint: lint-frontend lint-backend
+
+lint-frontend:
+	@echo "Linting frontend..."
+	cd app && npm run lint
+
+lint-backend:
+	@echo "Linting backend..."
+	cd backend && golangci-lint run
+
+pre-commit: lint
+	@echo "Running pre-commit hooks..."
+	pre-commit run --all-files 
