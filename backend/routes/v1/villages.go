@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/controllers"
 	"opendataug.org/database"
 	customerrors "opendataug.org/errors"
@@ -42,13 +43,13 @@ func (h *VillageHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHan
 
 func (h *VillageHandler) createVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	if err := h.controller.CreateVillage(c); err != nil {
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to create village"))
 		return
 	}
 
@@ -59,30 +60,28 @@ func (h *VillageHandler) createVillage(c *gin.Context) {
 
 func (h *VillageHandler) updateVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	if err := h.controller.UpdateVillage(c); err != nil {
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to update village"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Village updated successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Village updated successfully"})
 }
 
 func (h *VillageHandler) deleteVillage(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.controller.GetDB())
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	if err := h.controller.DeleteVillage(c); err != nil {
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to delete village"))
 		return
 	}
 
@@ -94,7 +93,7 @@ func (h *VillageHandler) deleteVillage(c *gin.Context) {
 func (h *VillageHandler) handleAllVillages(c *gin.Context) {
 	villages, err := h.controller.GetAllVillages(c)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch villages"))
 		return
 	}
 
@@ -104,7 +103,7 @@ func (h *VillageHandler) handleAllVillages(c *gin.Context) {
 func (h *VillageHandler) handleGetVillage(c *gin.Context) {
 	village, err := h.controller.GetVillage(c)
 	if err != nil {
-		c.Error(err)
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Failed to fetch village"))
 		return
 	}
 

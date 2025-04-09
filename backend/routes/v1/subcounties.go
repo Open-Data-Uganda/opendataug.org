@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"opendataug.org/commons"
+	"opendataug.org/commons/constants"
 	"opendataug.org/database"
 	customerrors "opendataug.org/errors"
 	"opendataug.org/models"
@@ -23,7 +24,6 @@ func NewSubcountyHandler(db *database.Database) *SubcountyHandle {
 func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHandler) {
 	subcounties := r.Group("/subcounties")
 	{
-
 		apiProtected := subcounties.Group("")
 		apiProtected.Use(authHandler.APIAuthMiddleware())
 		{
@@ -44,14 +44,14 @@ func (h *SubcountyHandle) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 
 func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
 
 	var payload models.SubCounty
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Failed to parse request body"))
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *SubcountyHandle) createSubcounty(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Create(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *SubcountyHandle) handleAllSubCounties(c *gin.Context) {
 		Offset((pagination.Page - 1) * pagination.Limit).
 		Limit(pagination.Limit).
 		Find(&subcounties).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *SubcountyHandle) handleGetSubCounty(c *gin.Context) {
 
 func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -121,7 +121,7 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 
 	var payload models.SubCounty
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, customerrors.NewValidationError(err.Error(), nil))
+		c.JSON(http.StatusBadRequest, customerrors.NewValidationError("Failed to parse request body"))
 		return
 	}
 
@@ -129,7 +129,7 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 	subcounty.CountyNumber = payload.CountyNumber
 
 	if err := h.db.DB.Save(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *SubcountyHandle) updateSubCounty(c *gin.Context) {
 
 func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != "ADMIN" && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin && !user.IsAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -157,7 +157,7 @@ func (h *SubcountyHandle) deleteSubCounty(c *gin.Context) {
 	}
 
 	if err := h.db.DB.Delete(&subcounty).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 
@@ -176,7 +176,7 @@ func (h *SubcountyHandle) handleParishes(c *gin.Context) {
 	var parishes []models.Parish
 	if err := h.db.DB.Where("sub_county_number = ?", number).
 		Find(&parishes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occured"))
+		c.JSON(http.StatusInternalServerError, customerrors.NewDatabaseError("Database level error occurred"))
 		return
 	}
 

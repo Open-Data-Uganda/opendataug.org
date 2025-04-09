@@ -12,6 +12,7 @@ const (
 	ErrorTypeBadRequest   ErrorType = "BAD_REQUEST"
 	ErrorTypeInternal     ErrorType = "INTERNAL_ERROR"
 	ErrorTypeRateLimit    ErrorType = "RATE_LIMIT_ERROR"
+	ErrorTypeForbidden    ErrorType = "FORBIDDEN"
 )
 
 type APIError struct {
@@ -25,11 +26,10 @@ func (e *APIError) Error() string {
 	return e.Message
 }
 
-func NewValidationError(message string, details any) *APIError {
+func NewValidationError(message string) *APIError {
 	return &APIError{
 		Type:       ErrorTypeValidation,
 		Message:    message,
-		Details:    details,
 		StatusCode: http.StatusBadRequest,
 	}
 }
@@ -79,4 +79,11 @@ func NewUnauthorizedError(message string) *APIError {
 		Type:       ErrorTypeUnauthorized,
 		Message:    message,
 		StatusCode: http.StatusUnauthorized}
+}
+
+func NewForbiddenError(message string) *APIError {
+	return &APIError{
+		Type:       ErrorTypeForbidden,
+		Message:    message,
+		StatusCode: http.StatusForbidden}
 }
