@@ -46,7 +46,7 @@ func (h *ParishHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHand
 
 func (h *ParishHandler) createParish(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -121,7 +121,7 @@ func (h *ParishHandler) handleParish(c *gin.Context) {
 
 func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -158,7 +158,7 @@ func (h *ParishHandler) handleUpdateParish(c *gin.Context) {
 
 func (h *ParishHandler) handleDeleteParish(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}

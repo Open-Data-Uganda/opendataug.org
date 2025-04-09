@@ -46,7 +46,7 @@ func (h *DistrictHandler) RegisterRoutes(r *gin.RouterGroup, authHandler *AuthHa
 
 func (h *DistrictHandler) createDistrict(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
@@ -166,7 +166,7 @@ func (h *DistrictHandler) handleDistrictByName(c *gin.Context) {
 
 func (h *DistrictHandler) deleteDistrict(c *gin.Context) {
 	user, _ := commons.GetUserFromHeader(c, h.db.DB)
-	if user.Role != constants.RoleAdmin && !user.IsAdmin {
+	if user.Role != constants.RoleAdmin {
 		c.JSON(http.StatusUnauthorized, customerrors.NewUnauthorizedError("Unauthorized"))
 		return
 	}
