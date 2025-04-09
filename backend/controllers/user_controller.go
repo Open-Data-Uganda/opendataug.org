@@ -12,7 +12,6 @@ import (
 	"opendataug.org/database"
 	"opendataug.org/models"
 	"opendataug.org/services"
-	"opendataug.org/utils"
 )
 
 type UserController struct {
@@ -109,7 +108,7 @@ func (c *UserController) ExecutePasswordReset(tx *gorm.DB, userNumber string, ha
 			return fmt.Errorf("failed to check existing password: %w", err)
 		}
 		userPassword = models.UserPassword{
-			Number:       utils.UUIDGenerator(),
+			Number:       commons.UUIDGenerator(),
 			UserPassword: hashedPassword,
 			UserNumber:   userNumber,
 		}
@@ -215,7 +214,7 @@ func (c *UserController) InvalidateSession(refreshToken string) error {
 }
 
 func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, *services.TokenDetails, error) {
-	tokenDetails, err := c.jwtService.CreateToken(user.Number, user.Role)
+	tokenDetails, err := c.jwtService.CreateToken(user.Number, string(user.Role))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create token: %w", err)
 	}
@@ -224,7 +223,7 @@ func (c *UserController) CreateLoginSession(user *models.User) (*LoginResponse, 
 		AccessToken:  tokenDetails.AccessToken,
 		RefreshToken: tokenDetails.RefreshToken,
 		UserNumber:   user.Number,
-		Role:         user.Role,
+		Role:         string(user.Role),
 		ExpiresIn:    tokenDetails.AccessTokenExpiresIn,
 	}
 
