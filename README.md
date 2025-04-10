@@ -1,6 +1,6 @@
 # Open Data Uganda
 
-A modern web application for accessing and visualizing Uganda's open data, built with React, TypeScript, and Go.
+Get access to Uganda's administrative data.
 
 ## Project Structure
 
