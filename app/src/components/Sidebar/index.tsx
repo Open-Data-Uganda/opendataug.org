@@ -1,5 +1,5 @@
 import { UsersIcon } from '@heroicons/react/24/outline';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import Logo from '../../assets/logo.png';
@@ -12,11 +12,6 @@ interface SidebarProps {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
-
-  const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
-  const [sidebarExpanded, _setSidebarExpanded] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
-  );
 
   // close on click outside
   useEffect(() => {
@@ -38,15 +33,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     document.addEventListener('keydown', keyHandler);
     return () => document.removeEventListener('keydown', keyHandler);
   });
-
-  useEffect(() => {
-    localStorage.setItem('sidebar-expanded', sidebarExpanded.toString());
-    if (sidebarExpanded) {
-      document.querySelector('body')?.classList.add('sidebar-expanded');
-    } else {
-      document.querySelector('body')?.classList.remove('sidebar-expanded');
-    }
-  }, [sidebarExpanded]);
 
   return (
     <aside

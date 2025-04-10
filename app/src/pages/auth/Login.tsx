@@ -7,6 +7,7 @@ import { z } from 'zod';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import SmallHeader from '../../components/SmallHeader';
+import { notifyError } from '../../components/toasts';
 import { useAuth } from '../../context/AuthContext';
 import { LoginSchema } from '../../types/schemas';
 
@@ -20,9 +21,9 @@ const Login: React.FC = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<Inputs>({
-    resolver: zodResolver(LoginSchema)
+    resolver: zodResolver(LoginSchema),
   });
 
   const navigate = useNavigate();
@@ -33,12 +34,13 @@ const Login: React.FC = () => {
     }
   }, [isLoading, isAuthenticated, userNumber, userRole, navigate, accessToken]);
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const onSubmit: SubmitHandler<Inputs> = async data => {
     setLoading(true);
     setDisabled(true);
     try {
       await login(data.email, data.password);
-    } catch (error) {
+    } catch {
+      notifyError('Login failed. Please check your credentials and try again.');
     } finally {
       reset();
       setLoading(false);

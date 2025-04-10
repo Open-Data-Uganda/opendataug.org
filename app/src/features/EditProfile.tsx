@@ -20,12 +20,12 @@ const Settings = () => {
 
   const { data: profile } = useGetRequest({
     url: 'auth/profile',
-    queryKey: 'profile'
+    queryKey: 'profile',
   });
 
   const deleteAccount = useDeleteRequest({
     queryKey: 'profile',
-    url: 'auth/account'
+    url: 'auth/account',
   });
 
   const handleDeleteAccount = async () => {
@@ -42,23 +42,18 @@ const Settings = () => {
 
   const { email, first_name, last_name } = profile || {};
 
-  const {
-    handleSubmit,
-    register,
-    reset,
-    formState: {}
-  } = useForm<Inputs>({
+  const { handleSubmit, register, reset } = useForm<Inputs>({
     defaultValues: {
       first_name: first_name,
       last_name: last_name,
-      email: email
+      email: email,
     },
-    resolver: zodResolver(EditProfileSchema)
+    resolver: zodResolver(EditProfileSchema),
   });
 
   const { mutateAsync } = usePatchRequest({
     url: `auth/profile`,
-    queryKey: 'profile'
+    queryKey: 'profile',
   });
 
   const onSubmit = async (data: any) => {
@@ -75,10 +70,10 @@ const Settings = () => {
       await mutateAsync(data, {
         onSuccess: () => {
           notifySuccess('Profile updated successfully.');
-        }
+        },
       });
       reset();
-    } catch (err: any) {
+    } catch {
       notifyError('Failed to update user profile details');
     }
     setLoading(false);

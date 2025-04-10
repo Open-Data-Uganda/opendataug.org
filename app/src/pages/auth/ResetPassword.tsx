@@ -21,9 +21,9 @@ const ResetPassword: React.FC = () => {
     handleSubmit,
     watch,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<Inputs>({
-    resolver: zodResolver(ResetPasswordSchema)
+    resolver: zodResolver(ResetPasswordSchema),
   });
 
   const token = useParams();
@@ -37,11 +37,11 @@ const ResetPassword: React.FC = () => {
       const response = await fetch(`${backendUrl}/auth/reset-password?token=${token}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: emailValue
-        })
+          email: emailValue,
+        }),
       });
 
       if (response.ok) {

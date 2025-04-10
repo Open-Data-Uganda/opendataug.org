@@ -35,7 +35,7 @@ const DropdownUser = () => {
 
   const { data: profile, isLoading } = useGetRequest({
     url: 'auth/profile',
-    queryKey: 'profile'
+    queryKey: 'profile',
   });
 
   if (isLoading) {

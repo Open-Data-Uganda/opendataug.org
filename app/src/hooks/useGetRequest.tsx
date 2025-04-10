@@ -23,26 +23,26 @@ const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
           headers: {
             'Content-Type': 'application/json',
             'User-Number': userNumber,
-            Authorization: `Bearer ${accessToken}`
-          }
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
 
         if (response.data.data && response.data.total !== undefined) {
           return {
             data: response.data.data,
-            total: response.data.total
+            total: response.data.total,
           };
         }
 
         return response.data;
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-          notifyError("An error occurred while fetching data")
+          notifyError('An error occurred while fetching data');
         } else {
-          notifyError("An error occurred while fetching data")
+          notifyError('An error occurred while fetching data');
         }
       }
-    }
+    },
   });
 };
 

@@ -7,8 +7,7 @@ export interface FallbackContextType {
 }
 
 export const FallbackContext = React.createContext<FallbackContextType>({
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  updateFallback: () => {}
+  updateFallback: () => {},
 });
 
 interface FallbackProviderProps {

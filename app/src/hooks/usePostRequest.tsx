@@ -13,15 +13,15 @@ const usePostRequest = ({ url, queryKey }: PostRequestProps) => {
   const { userNumber, accessToken } = useAuth();
 
   return useMutation({
-    mutationFn: async (body) => {
+    mutationFn: async body => {
       try {
         const response = await axios.post(`${backendUrl}/${url}`, body, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
             'User-Number': userNumber,
-            Authorization: `Bearer ${accessToken}`
-          }
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
         return response.data;
       } catch (error) {
@@ -35,9 +35,9 @@ const usePostRequest = ({ url, queryKey }: PostRequestProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
     },
-    onError: (error) => {
+    onError: error => {
       console.error(error);
-    }
+    },
   });
 };
 

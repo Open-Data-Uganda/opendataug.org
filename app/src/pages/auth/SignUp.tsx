@@ -31,12 +31,12 @@ const SignUp: React.FC = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<Inputs>({
-    resolver: zodResolver(SignUpSchema)
+    resolver: zodResolver(SignUpSchema),
   });
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const onSubmit: SubmitHandler<Inputs> = async data => {
     setLoading(true);
     setDisabled(true);
 
@@ -44,13 +44,13 @@ const SignUp: React.FC = () => {
       const response = await fetch(`${backendUrl}/auth/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           first_name: data.first_name,
           last_name: data.last_name,
-          email: data.email
-        })
+          email: data.email,
+        }),
       });
 
       const result = await response.json();
@@ -114,7 +114,7 @@ const SignUp: React.FC = () => {
                   type="checkbox"
                   className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   checked={termsAccepted}
-                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  onChange={e => setTermsAccepted(e.target.checked)}
                   required
                 />
                 <span className="ml-2 text-xs text-gray-600">

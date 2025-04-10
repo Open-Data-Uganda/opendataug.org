@@ -8,7 +8,7 @@ const Header = (props: { sidebarOpen: string | boolean | undefined; setSidebarOp
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
             aria-controls="sidebar"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               props.setSidebarOpen(!props.sidebarOpen);
             }}
