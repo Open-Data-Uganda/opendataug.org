@@ -10,7 +10,6 @@ The project consists of two main components:
 
 - Built with React, TypeScript, and Vite
 - Uses Tailwind CSS for styling
-- Modern UI components and responsive design
 
 ### Backend (`/backend`)
 
@@ -18,6 +17,7 @@ The project consists of two main components:
 - RESTful API architecture
 - PostgreSQL database integration
 - Authentication and authorization middleware
+- Rate limiting 
 
 ## Prerequisites
 
@@ -105,6 +105,11 @@ docker run -p 80:80 ug-data-frontend
 cd backend
 docker build -t ug-data-backend .
 docker run -p 8080:8080 ug-data-backend
+
+
+# Or use Docker Compose (recommended)
+docker compose up --build   
+docker compose down        
 ```
 
 ## Contributing
