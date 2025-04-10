@@ -12,10 +12,9 @@ const Settings = () => {
     setMessage(null);
 
     try {
-      // Add your API call here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
     } finally {
       setIsLoading(false);

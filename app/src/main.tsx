@@ -16,13 +16,13 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      retry: 2
-    }
-  }
+      retry: 2,
+    },
+  },
 });
 
 const customTheme = createTheme({
-  typography: {}
+  typography: {},
 });
 
 const Providers = ({ children }: { children: ReactNode }) => {

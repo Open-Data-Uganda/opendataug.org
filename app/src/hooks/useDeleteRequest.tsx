@@ -19,14 +19,14 @@ const useDeleteRequest = ({ queryKey, url }: UseDeleteRequestProps) => {
         withCredentials: true,
         headers: {
           'User-Number': userNumber,
-          Authorization: `Bearer ${accessToken}`
-        }
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
     },
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
-    }
+    },
   });
 };
 

@@ -19,14 +19,14 @@ import CreateAPIKey from './CreateAPIKey';
 const Overview: React.FC = () => {
   const { data, isError, isLoading } = useGetRequest({
     url: 'api-keys',
-    queryKey: ['api-keys']
+    queryKey: ['api-keys'],
   });
 
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState('');
   const deleteAPIKeyMutation = useDeleteRequest({
     queryKey: 'api-keys',
-    url: `api-keys/${selected}`
+    url: `api-keys/${selected}`,
   });
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -37,7 +37,7 @@ const Overview: React.FC = () => {
       await deleteAPIKeyMutation.mutateAsync();
       setShowModal(false);
       notifySuccess('API Key deleted');
-    } catch (err) {
+    } catch {
       notifyError('API Key not deleted');
       setShowModal(false);
     }
@@ -49,7 +49,7 @@ const Overview: React.FC = () => {
       setCopiedId(text);
       notifySuccess('API Key copied to clipboard');
       setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
+    } catch {
       notifyError('Failed to copy API Key');
     }
   };
@@ -62,7 +62,7 @@ const Overview: React.FC = () => {
 
   const { mutateAsync } = usePostRequest({
     url: 'api-keys',
-    queryKey: 'api-keys'
+    queryKey: 'api-keys',
   });
 
   const queryClient = useQueryClient();

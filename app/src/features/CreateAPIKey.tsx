@@ -23,9 +23,9 @@ const CreateAPIKey = ({ onCreateKey }: CreateAPIKeyProps) => {
     handleSubmit,
     reset,
     watch,
-    formState: { errors }
+    formState: { errors },
   } = useForm<APIKeyFormData>({
-    resolver: zodResolver(APIKeySchema)
+    resolver: zodResolver(APIKeySchema),
   });
 
   const nameValue = watch('name');

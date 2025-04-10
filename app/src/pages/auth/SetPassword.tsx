@@ -23,9 +23,9 @@ const SetPassword: React.FC = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<Inputs>({
-    resolver: zodResolver(SetPasswordSchema)
+    resolver: zodResolver(SetPasswordSchema),
   });
 
   const onSubmit: SubmitHandler<Inputs> = async (data: any) => {
@@ -35,12 +35,12 @@ const SetPassword: React.FC = () => {
       const response = await fetch(`${backendUrl}/auth/set-password?token=${token}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           password: data.password,
-          confirm_password: data.confirm_password
-        })
+          confirm_password: data.confirm_password,
+        }),
       });
 
       if (response.ok) {
