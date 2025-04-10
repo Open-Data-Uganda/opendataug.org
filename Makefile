@@ -34,9 +34,23 @@ clean: stop
 
 lint: lint-frontend lint-backend
 
+lint-backend-fix:
+	@echo "Fixing backend lint issues..."
+	cd backend && golangci-lint run --fix ./...
+
+lint-frontend-fix:
+	@echo "Fixing frontend lint issues..."
+	cd app && npm run lint -- --fix
+
+lint-fix: lint-fix-frontend lint-fix-backend
+
 lint-frontend:
 	@echo "Linting frontend..."
 	cd app && npm run lint
+
+format:
+	@echo "Formatting..."
+	cd app && npm run format && cd ../backend && gofmt -w .
 
 lint-backend:
 	@echo "Linting backend..."
