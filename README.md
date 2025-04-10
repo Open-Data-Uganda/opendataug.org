@@ -122,8 +122,8 @@ docker compose down
 
 ## License
 
-This project is licensed under the terms specified in the LICENSE.md file.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Contact
 
-For any queries or support, please open an issue in the repository. 
+For any queries or support, please open an issue in the repository.
