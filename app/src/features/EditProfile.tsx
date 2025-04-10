@@ -6,9 +6,9 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import { DeleteModal } from '../components/Modals/DeleteModal';
 import { notifyError, notifySuccess } from '../components/toasts';
-import useDeleteRequest from '../hooks/useDeleteRequest';
-import useGetRequest from '../hooks/useGetRequest';
-import usePatchRequest from '../hooks/usePatchRequest';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useGetRequest } from '../hooks/useGetRequest';
+import { usePatchRequest } from '../hooks/usePatchRequest';
 import DefaultLayout from '../layout/DefaultLayout';
 import { EditProfileSchema } from '../types/schemas';
 

@@ -8,7 +8,7 @@ interface PostRequestProps {
   queryKey: string;
 }
 
-const usePatchRequest = ({ url, queryKey }: PostRequestProps) => {
+export const usePatchRequest = ({ url, queryKey }: PostRequestProps) => {
   const queryClient = useQueryClient();
   const { userNumber, accessToken } = useAuth();
 
@@ -40,5 +40,3 @@ const usePatchRequest = ({ url, queryKey }: PostRequestProps) => {
     },
   });
 };
-
-export default usePatchRequest;

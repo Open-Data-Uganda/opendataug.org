@@ -10,7 +10,7 @@ interface GetRequestProps {
   params?: Record<string, any>;
 }
 
-const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
+export const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
   const { userNumber, accessToken } = useAuth();
 
   return useQuery({
@@ -45,5 +45,3 @@ const useGetRequest = ({ url, queryKey, params }: GetRequestProps) => {
     },
   });
 };
-
-export default useGetRequest;

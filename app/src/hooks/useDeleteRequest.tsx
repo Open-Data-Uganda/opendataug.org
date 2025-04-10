@@ -8,7 +8,7 @@ interface UseDeleteRequestProps {
   url: string;
 }
 
-const useDeleteRequest = ({ queryKey, url }: UseDeleteRequestProps) => {
+export const useDeleteRequest = ({ queryKey, url }: UseDeleteRequestProps) => {
   const { userNumber, accessToken } = useAuth();
 
   const queryClient = useQueryClient();
@@ -29,5 +29,3 @@ const useDeleteRequest = ({ queryKey, url }: UseDeleteRequestProps) => {
     },
   });
 };
-
-export default useDeleteRequest;

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import defaultImg from '../../assets/default.png';
 
 import { useAuth } from '../../context/AuthContext';
-import useGetRequest from '../../hooks/useGetRequest';
+import { useGetRequest } from '../../hooks/useGetRequest';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
